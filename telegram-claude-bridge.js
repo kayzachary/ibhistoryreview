@@ -151,12 +151,8 @@ function runCommand(chatId, prompt, label) {
   // Build args:
   // - Main conversation messages use --continue to keep conversation history
   // - /btw messages are standalone (no --continue)
-  const args = ["-p", prompt];
-
-  if (label === "task" && chat.conversationActive) {
-    // Continue existing conversation
-    args.push("--continue");
-  }
+  const isContinue = label === "task" && chat.conversationActive;
+  const args = isContinue ? ["-p", "--continue", prompt] : ["-p", prompt];
 
   const claude = spawn(claudePath, args, {
     cwd,
