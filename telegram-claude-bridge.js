@@ -142,9 +142,10 @@ function runCommand(chatId, prompt, label) {
   const tag = label === "btw" ? `BTW #${taskId}` : `Task #${taskId}`;
   bot.sendMessage(chatId, `${tag} started: "${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}"`);
 
-  const claude = spawn("claude", ["-p", prompt], {
+  const claudePath = process.env.CLAUDE_PATH || "/opt/node22/bin/claude";
+  const claude = spawn(claudePath, ["-p", prompt], {
     cwd: process.env.CLAUDE_WORKING_DIR || process.cwd(),
-    env: { ...process.env },
+    env: { ...process.env, PATH: process.env.PATH + ":/opt/node22/bin:/usr/local/bin" },
     timeout: 300000,
   });
 
@@ -164,7 +165,14 @@ function runCommand(chatId, prompt, label) {
   claude.on("close", (code) => {
     sessions.delete(taskId);
 
-    const response = output.trim() || errorOutput.trim() || "(no output)";
+    let response;
+    if (output.trim()) {
+      response = output.trim();
+    } else if (errorOutput.trim()) {
+      response = "Error:\n" + errorOutput.trim();
+    } else {
+      response = `(no output — exit code ${code})`;
+    }
     const header = `${tag} finished:\n\n`;
 
     const chunks = splitMessage(header + response, 4000);
