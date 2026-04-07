@@ -1,0 +1,21 @@
+{
+  "name": "ibhistoryreview",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node telegram-claude-bridge.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:45307/git/kayzachary/ibhistoryreview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^17.4.1",
+    "node-telegram-bot-api": "^0.67.0"
+  }
+}
