@@ -17,10 +17,20 @@ if (!TELEGRAM_BOT_TOKEN) {
 }
 
 const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
-const activeSessions = new Map(); // chatId -> child process
+
+// chatId -> Map<taskId, { process, prompt }>
+const activeSessions = new Map();
+let taskCounter = 0;
 
 function isAuthorized(userId) {
   return ALLOWED_USER_IDS.length === 0 || ALLOWED_USER_IDS.includes(userId);
+}
+
+function getSessionMap(chatId) {
+  if (!activeSessions.has(chatId)) {
+    activeSessions.set(chatId, new Map());
+  }
+  return activeSessions.get(chatId);
 }
 
 bot.onText(/\/start/, (msg) => {
@@ -28,10 +38,14 @@ bot.onText(/\/start/, (msg) => {
     msg.chat.id,
     "Claude Code Telegram Bridge\n\n" +
       "Send any message and it will be forwarded to Claude Code running on your machine.\n\n" +
+      "Multiple commands run in parallel — send as many as you want!\n\n" +
       "Commands:\n" +
       "/start - Show this help\n" +
-      "/stop - Cancel the current running command\n" +
-      "/id - Show your Telegram user ID (for ALLOWED_USER_IDS)"
+      "/btw <message> - Quick side query while others are running\n" +
+      "/tasks - Show all running tasks\n" +
+      "/stop - Stop all running tasks\n" +
+      "/stop <id> - Stop a specific task by ID\n" +
+      "/id - Show your Telegram user ID"
   );
 });
 
@@ -39,15 +53,63 @@ bot.onText(/\/id/, (msg) => {
   bot.sendMessage(msg.chat.id, `Your Telegram user ID: ${msg.from.id}`);
 });
 
-bot.onText(/\/stop/, (msg) => {
-  const session = activeSessions.get(msg.chat.id);
-  if (session) {
-    session.kill("SIGTERM");
-    activeSessions.delete(msg.chat.id);
-    bot.sendMessage(msg.chat.id, "Stopped current command.");
-  } else {
-    bot.sendMessage(msg.chat.id, "No active command to stop.");
+bot.onText(/\/tasks/, (msg) => {
+  const sessions = getSessionMap(msg.chat.id);
+  if (sessions.size === 0) {
+    bot.sendMessage(msg.chat.id, "No tasks running.");
+    return;
   }
+  let list = "Running tasks:\n\n";
+  for (const [id, task] of sessions) {
+    const preview =
+      task.prompt.length > 60
+        ? task.prompt.slice(0, 60) + "..."
+        : task.prompt;
+    list += `#${id} — ${preview}\n`;
+  }
+  bot.sendMessage(msg.chat.id, list);
+});
+
+bot.onText(/\/stop(.*)/, (msg, match) => {
+  const arg = match[1].trim();
+  const sessions = getSessionMap(msg.chat.id);
+
+  if (arg) {
+    // Stop specific task
+    const id = parseInt(arg.replace("#", ""), 10);
+    const task = sessions.get(id);
+    if (task) {
+      task.process.kill("SIGTERM");
+      sessions.delete(id);
+      bot.sendMessage(msg.chat.id, `Stopped task #${id}.`);
+    } else {
+      bot.sendMessage(
+        msg.chat.id,
+        `Task #${id} not found. Use /tasks to see running tasks.`
+      );
+    }
+  } else {
+    // Stop all
+    if (sessions.size === 0) {
+      bot.sendMessage(msg.chat.id, "No tasks running.");
+      return;
+    }
+    const count = sessions.size;
+    for (const [id, task] of sessions) {
+      task.process.kill("SIGTERM");
+    }
+    sessions.clear();
+    bot.sendMessage(msg.chat.id, `Stopped ${count} task(s).`);
+  }
+});
+
+// /btw handler — quick side query
+bot.onText(/\/btw (.+)/, (msg, match) => {
+  if (!isAuthorized(msg.from.id)) {
+    bot.sendMessage(msg.chat.id, "Unauthorized. Your ID: " + msg.from.id);
+    return;
+  }
+  runCommand(msg.chat.id, match[1], "btw");
 });
 
 bot.on("message", (msg) => {
@@ -56,6 +118,8 @@ bot.on("message", (msg) => {
     msg.text &&
     (msg.text.startsWith("/start") ||
       msg.text.startsWith("/stop") ||
+      msg.text.startsWith("/tasks") ||
+      msg.text.startsWith("/btw") ||
       msg.text.startsWith("/id"))
   ) {
     return;
@@ -68,24 +132,23 @@ bot.on("message", (msg) => {
     return;
   }
 
-  const chatId = msg.chat.id;
+  runCommand(msg.chat.id, msg.text, "task");
+});
 
-  // Kill any existing session for this chat
-  if (activeSessions.has(chatId)) {
-    activeSessions.get(chatId).kill("SIGTERM");
-    activeSessions.delete(chatId);
-  }
+function runCommand(chatId, prompt, label) {
+  const sessions = getSessionMap(chatId);
+  const taskId = ++taskCounter;
 
-  bot.sendMessage(chatId, "Running...");
+  const tag = label === "btw" ? `BTW #${taskId}` : `Task #${taskId}`;
+  bot.sendMessage(chatId, `${tag} started: "${prompt.slice(0, 80)}${prompt.length > 80 ? "..." : ""}"`);
 
-  // Spawn claude CLI in non-interactive print mode
-  const claude = spawn("claude", ["-p", msg.text], {
+  const claude = spawn("claude", ["-p", prompt], {
     cwd: process.env.CLAUDE_WORKING_DIR || process.cwd(),
     env: { ...process.env },
-    timeout: 300000, // 5 minute timeout
+    timeout: 300000,
   });
 
-  activeSessions.set(chatId, claude);
+  sessions.set(taskId, { process: claude, prompt });
 
   let output = "";
   let errorOutput = "";
@@ -99,22 +162,22 @@ bot.on("message", (msg) => {
   });
 
   claude.on("close", (code) => {
-    activeSessions.delete(chatId);
+    sessions.delete(taskId);
 
     const response = output.trim() || errorOutput.trim() || "(no output)";
+    const header = `${tag} finished:\n\n`;
 
-    // Telegram messages have a 4096 char limit — split if needed
-    const chunks = splitMessage(response, 4000);
+    const chunks = splitMessage(header + response, 4000);
     for (const chunk of chunks) {
       bot.sendMessage(chatId, chunk);
     }
   });
 
   claude.on("error", (err) => {
-    activeSessions.delete(chatId);
-    bot.sendMessage(chatId, `Error: ${err.message}`);
+    sessions.delete(taskId);
+    bot.sendMessage(chatId, `${tag} error: ${err.message}`);
   });
-});
+}
 
 function splitMessage(text, maxLen) {
   const chunks = [];
@@ -123,7 +186,6 @@ function splitMessage(text, maxLen) {
       chunks.push(text);
       break;
     }
-    // Try to split at a newline
     let splitIdx = text.lastIndexOf("\n", maxLen);
     if (splitIdx === -1 || splitIdx < maxLen / 2) {
       splitIdx = maxLen;
