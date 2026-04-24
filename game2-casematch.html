@@ -108,7 +108,7 @@ const app = document.getElementById('app');
 
 function menuBar(){
   return `<div class="menu-bar text-2xl">
-    <button onclick="goTitle()" class="btn bg-white text-blue-900 font-black px-5 py-2 rounded-lg">&larr; Main Menu</button>
+    <button onclick="goTitle()" class="btn bg-white text-blue-900 font-black px-5 py-2 rounded-lg">&larr; Title</button>
     <div class="font-bold">Game 2 — Name That Landmark</div>
     <div class="font-mono">${state.twoPlayer?`P1:${state.scoreP1}  P2:${state.scoreP2}  |  Turn: P${state.currentPlayer}`:`Matches: ${state.scoreP1}/8`}</div>
   </div>`;
@@ -207,7 +207,6 @@ function renderWin(){
     <div class="flex gap-4 flex-wrap">
       <button onclick="startGame(state.twoPlayer)" class="btn bg-blue-900 text-white text-3xl font-black px-8 py-5 rounded-2xl">Play Again</button>
       <button onclick="goTitle()" class="btn bg-orange-600 text-white text-3xl font-black px-8 py-5 rounded-2xl">Title Screen</button>
-      <a href="index.html" class="btn bg-gray-700 text-white text-3xl font-black px-8 py-5 rounded-2xl">Main Menu</a>
     </div>
   </div>`;
   sfxWin();
