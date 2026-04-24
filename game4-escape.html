@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Interrogation Room — Escape</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body{background:#FAF5EA;color:#1A202C;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .vocab{color:#EA580C;font-weight:800}
+  .menu-bar{position:fixed;bottom:0;left:0;right:0;background:#1E3A8A;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;z-index:50}
+  .tip{background:#ECFCCB;border-left:10px solid #65A30D;color:#365314}
+  .btn{transition:transform .08s ease}
+  .btn:active{transform:translateY(2px)}
+  .amend-btn{background:#FFFBEF;border:5px solid #1E3A8A;color:#1E3A8A;transition:all .15s}
+  .amend-btn:hover:not(:disabled){background:#FEF3C7;transform:translateY(-2px);box-shadow:0 6px 0 #1E3A8A}
+  .amend-btn.correct{background:#DCFCE7;border-color:#16A34A;color:#14532D;box-shadow:0 0 25px #22C55E}
+  .amend-btn.wrong{background:#FEE2E2;border-color:#DC2626;color:#991B1B;animation:shake .5s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+  .correct-panel{background:#DCFCE7;border:5px solid #16A34A;color:#14532D}
+  .wrong-panel{background:#FEE2E2;border:5px solid #DC2626;color:#7F1D1D}
+  .door{background:linear-gradient(180deg,#78350F,#451A03);border:6px solid #1C0701;border-radius:6px;position:relative}
+  .door-progress{height:100%;background:linear-gradient(180deg,#FCD34D,#F59E0B);transition:width .6s ease}
+  .lock{display:inline-block;width:40px;height:40px;border-radius:50%;background:#FCD34D;border:4px solid #78350F;margin:0 4px;transition:all .3s}
+  .lock.unlocked{background:#22C55E;border-color:#14532D;transform:rotate(30deg) scale(1.2)}
+</style>
+</head>
+<body class="min-h-screen pb-20">
+<div id="app"></div>
+
+<script>
+let ctx;
+function initAudio(){ if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+function tone(f,d,t='sine',v=0.25){
+  initAudio();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=t; o.frequency.value=f;
+  g.gain.setValueAtTime(v,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);
+  o.connect(g).connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+d);
+}
+function sfxClick(){tone(620,0.05)}
+function sfxWrong(){tone(180,0.35,'sawtooth',0.22)}
+function sfxUnlock(){tone(440,0.08);setTimeout(()=>tone(587,0.08),80);setTimeout(()=>tone(784,0.2),160);setTimeout(()=>tone(1047,0.3),280)}
+function sfxEscape(){[392,523,659,784,1047,1318,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.25),i*120))}
+
+const VOCAB = ['probable cause','warrant','search and seizure','self-incrimination','Miranda','counsel','public defender','speedy trial','cruel and unusual punishment','excessive bail','4th Amendment','5th Amendment','6th Amendment','8th Amendment','exclusionary rule','indictment'];
+function hl(text){
+  let out = text;
+  const sorted = [...VOCAB].sort((a,b)=>b.length-a.length);
+  sorted.forEach(w=>{
+    const rx = new RegExp('('+w.replace(/ /g,'\\s+')+')','gi');
+    out = out.replace(rx,'<span class="vocab">$1</span>');
+  });
+  return out;
+}
+
+const PUZZLES = [
+  {title:'Puzzle 1 — The Search',
+   scenario:'Police searched your backpack without a warrant and without your consent. They found nothing, but they want to keep looking.',
+   correct:'4th',
+   right:{name:'4th Amendment', detail:'Protects against unreasonable search and seizure — requires a warrant based on probable cause.', case:'Mapp v. Ohio (1961)', caseDetail:'Established that any evidence police find illegally cannot be used against you in state court (the exclusionary rule).'},
+   wrong:{
+     '5th':'The 5th Amendment protects against self-incrimination. This scenario is about a search, not about being forced to talk.',
+     '6th':'The 6th Amendment covers trial rights like a lawyer and a speedy trial. No trial is happening yet — this is about the search itself.',
+     '8th':'The 8th Amendment addresses cruel and unusual punishment + excessive bail. Nothing has been decided or imposed yet.'
+   }
+  },
+  {title:'Puzzle 2 — The Interrogation',
+   scenario:"They've been questioning you for hours. They keep pressuring you to confess. You haven't been told you could stay silent.",
+   correct:'5th',
+   right:{name:'5th Amendment', detail:'Protection against self-incrimination — "I plead the Fifth." You cannot be forced to testify against yourself.', case:'Miranda v. Arizona (1966)', caseDetail:'Police must warn you of your rights (right to remain silent, right to an attorney) BEFORE questioning you in custody.'},
+   wrong:{
+     '4th':'The 4th Amendment covers searches and seizures. Here the issue is being questioned without being warned of your rights.',
+     '6th':'The 6th Amendment covers the trial phase (lawyer, speedy trial). Miranda specifically addresses pre-trial interrogation under the 5th.',
+     '8th':'The 8th Amendment is about punishment and bail, not interrogation.'
+   }
+  },
+  {title:'Puzzle 3 — The Lawyer',
+   scenario:"You ask for a lawyer. The officer says, 'You can't afford one, so you don't get one.' You're being charged with a felony.",
+   correct:'6th',
+   right:{name:'6th Amendment', detail:'Right to counsel — states must provide a lawyer (a public defender) if you cannot afford one.', case:'Gideon v. Wainwright (1963)', caseDetail:'Applied the right to counsel to the states. Every felony defendant gets a lawyer, paid for by the state if needed.'},
+   wrong:{
+     '4th':'The 4th Amendment is about searches. This scenario is about the right to a lawyer.',
+     '5th':'The 5th covers self-incrimination. Miranda does mention a lawyer, but the affirmative right to counsel at trial comes from the 6th Amendment.',
+     '8th':'The 8th addresses punishment and bail — not access to an attorney.'
+   }
+  },
+  {title:'Puzzle 4 — The Trial',
+   scenario:"You've been held in jail for 14 months waiting for your trial. No date has been scheduled. Your lawyer keeps filing motions to speed things up.",
+   correct:'6th',
+   right:{name:'6th Amendment', detail:'Right to a speedy and public trial. The government cannot hold you indefinitely without trying you.', case:'Klopfer v. North Carolina (1967)', caseDetail:'Applied the right to a speedy trial to the states (incorporation).'},
+   wrong:{
+     '4th':'The 4th covers searches, not the timing of a trial.',
+     '5th':'The 5th covers self-incrimination and double jeopardy — not trial scheduling.',
+     '8th':'The 8th addresses punishment and bail. Being held before conviction raises 8th Amendment bail concerns, but the core right here is a speedy trial (6th).'
+   }
+  },
+  {title:'Puzzle 5 — The Sentence',
+   scenario:"You've been convicted of a minor theft. The judge sentences you to 25 years in prison and a $500,000 fine.",
+   correct:'8th',
+   right:{name:'8th Amendment', detail:'Protection against cruel and unusual punishment + excessive fines. The punishment must fit the crime.', case:'Solem v. Helm (1983)', caseDetail:'A prison sentence grossly disproportionate to the crime violates the 8th Amendment.'},
+   wrong:{
+     '4th':'The 4th covers the investigation stage (searches). The case is over — this is about the sentence.',
+     '5th':'The 5th covers self-incrimination and double jeopardy. Neither applies to an excessive sentence.',
+     '6th':'The 6th covers trial rights (lawyer, speedy trial). The trial is over — this is about the punishment.'
+   }
+  }
+];
+
+let state = {
+  screen:'title',
+  puzzleIdx:0,
+  solved:0,
+  feedback:null // {correct:bool, pick:'4th'|'5th'|'6th'|'8th'}
+};
+
+const app = document.getElementById('app');
+
+function menuBar(){
+  return `<div class="menu-bar text-2xl">
+    <button onclick="goTitle()" class="btn bg-white text-blue-900 font-black px-5 py-2 rounded-lg">&larr; Main Menu</button>
+    <div class="font-bold">Game 4 — The Interrogation Room</div>
+    <div class="font-mono">Unlocked: ${state.solved} / 5</div>
+  </div>`;
+}
+
+function renderTitle(){
+  app.innerHTML = `
+  <div class="p-10 max-w-5xl mx-auto">
+    <h1 class="text-7xl font-black text-blue-900 mb-4">The Interrogation Room</h1>
+    <h2 class="text-4xl text-orange-600 font-bold mb-8">Rights of the Accused — Escape Room</h2>
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-8 text-3xl leading-relaxed mb-6">
+      <p class="mb-4"><b>The situation:</b> You've been brought in for questioning. The police aren't following the rules. Identify each violation to unlock the door and leave.</p>
+      <p class="mb-4">5 puzzles. Each one = pick the constitutional amendment that was violated. Wrong answer? No penalty — keep trying.</p>
+      <p><b>Goal:</b> Unlock all 5 locks and escape.</p>
+    </div>
+    <div class="tip p-6 text-3xl rounded-xl mb-8">
+      <b>Key idea:</b> The 4th protects <b>before arrest</b>. The 5th protects <b>during interrogation</b>. The 6th protects <b>during trial</b>. The 8th protects <b>during sentencing</b>.
+    </div>
+    <button onclick="startGame()" class="btn bg-blue-900 text-white text-4xl font-black px-10 py-6 rounded-2xl shadow-lg">Enter the Room</button>
+  </div>`;
+}
+
+function renderGame(){
+  const p = PUZZLES[state.puzzleIdx];
+  const fb = state.feedback;
+  const progressPct = (state.solved/5)*100;
+  app.innerHTML = `
+  <div class="p-6 max-w-6xl mx-auto">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="flex-1 door rounded overflow-hidden" style="height:34px">
+        <div class="door-progress" style="width:${progressPct}%"></div>
+      </div>
+      <div class="text-2xl font-black text-blue-900 whitespace-nowrap">${state.solved}/5 unlocked</div>
+    </div>
+    <div class="flex justify-center gap-2 mb-4">
+      ${[0,1,2,3,4].map(i=>`<span class="lock ${i<state.solved?'unlocked':''}"></span>`).join('')}
+    </div>
+
+    <div class="text-3xl font-black text-orange-600 mb-2">${p.title}</div>
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-8 mb-6">
+      <div class="text-4xl leading-snug">${hl(p.scenario)}</div>
+    </div>
+
+    <div class="text-2xl font-bold text-gray-700 mb-3">Which amendment was violated?</div>
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      ${['4th','5th','6th','8th'].map(a=>{
+        const isPick = fb && fb.pick===a;
+        const showCorrect = fb && a===p.correct && (fb.correct || isPick===false);
+        let cls = 'amend-btn rounded-2xl p-6 text-4xl font-black text-center btn';
+        if(fb && isPick && fb.correct) cls += ' correct';
+        else if(fb && isPick && !fb.correct) cls += ' wrong';
+        else if(fb && !fb.correct && a===p.correct) cls += ' correct';
+        return `<button onclick="pickAmend('${a}')" ${fb&&fb.correct?'disabled':''} class="${cls}">${a} Amendment</button>`;
+      }).join('')}
+    </div>
+
+    ${fb?renderFeedback(fb,p):''}
+  </div>
+  ${menuBar()}`;
+}
+
+function renderFeedback(fb,p){
+  if(fb.correct){
+    return `<div class="correct-panel rounded-2xl p-8">
+      <div class="text-5xl font-black mb-3">&#128275; Lock released!</div>
+      <div class="text-3xl font-black mb-2">${p.right.name}</div>
+      <div class="text-3xl mb-4 leading-snug">${hl(p.right.detail)}</div>
+      <div class="tip p-5 rounded-xl text-3xl mb-5">
+        <b>Landmark case:</b> ${p.right.case} &mdash; ${hl(p.right.caseDetail)}
+      </div>
+      <button onclick="advance()" class="btn bg-green-700 text-white text-3xl font-black px-8 py-4 rounded-xl">${state.puzzleIdx<4?'Next Puzzle':'Escape!'} &rarr; (Enter)</button>
+    </div>`;
+  }
+  return `<div class="wrong-panel rounded-2xl p-8">
+    <div class="text-5xl font-black mb-3">&#128683; That amendment doesn't fit here</div>
+    <div class="text-3xl mb-4 leading-snug">${hl(p.wrong[fb.pick])}</div>
+    <div class="tip p-5 rounded-xl text-2xl mb-5">
+      <b>Hint:</b> Think about <i>when</i> the violation happened — before arrest, during questioning, during trial, or during sentencing?
+    </div>
+    <button onclick="clearFeedback()" class="btn bg-red-700 text-white text-3xl font-black px-8 py-4 rounded-xl">Try Again (Enter)</button>
+  </div>`;
+}
+
+function renderWin(){
+  app.innerHTML = `
+  <div class="p-10 max-w-6xl mx-auto">
+    <h1 class="text-7xl font-black text-green-700 mb-4">Escape Successful!</h1>
+    <div class="text-4xl text-orange-600 font-black mb-8">You identified all 5 violations and walked out.</div>
+
+    <div class="tip p-6 text-3xl rounded-xl mb-6">
+      <b>The one-line summary:</b> The 4th protects before arrest. The 5th protects during interrogation. The 6th protects during trial. The 8th protects during sentencing.
+    </div>
+
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-6 mb-6">
+      <div class="text-3xl font-black text-blue-900 mb-4">Study Guide — Rights of the Accused</div>
+      ${[
+        {amend:'4th Amendment', protect:'Before arrest', rule:'Protects against unreasonable search and seizure; requires a warrant based on probable cause.', cse:'Mapp v. Ohio (1961)', md:'Maryland police cannot search a Baltimore student\'s locker without reasonable suspicion.'},
+        {amend:'5th Amendment', protect:'During interrogation', rule:'Protection against self-incrimination — you can remain silent.', cse:'Miranda v. Arizona (1966)', md:'Anne Arundel police must read the Miranda warning before custodial questioning.'},
+        {amend:'6th Amendment', protect:'During trial', rule:'Right to counsel, speedy and public trial, impartial jury.', cse:'Gideon v. Wainwright (1963)', md:'Maryland provides a public defender to any felony defendant who cannot afford a lawyer.'},
+        {amend:'8th Amendment', protect:'During sentencing', rule:'No cruel and unusual punishment; no excessive bail or fines.', cse:'Solem v. Helm (1983)', md:'A Maryland judge cannot impose a 25-year sentence for shoplifting.'}
+      ].map(a=>`
+        <div class="border-b-2 pb-4 mb-4 last:border-0 last:mb-0">
+          <div class="text-2xl font-black text-blue-900">${a.amend} &mdash; <span class="text-orange-600">${a.protect}</span></div>
+          <div class="text-2xl mt-1">${hl(a.rule)}</div>
+          <div class="text-xl mt-1"><b>Case:</b> ${a.cse}</div>
+          <div class="text-xl"><b>MD example:</b> ${a.md}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="flex gap-4 flex-wrap">
+      <button onclick="startGame()" class="btn bg-blue-900 text-white text-3xl font-black px-8 py-5 rounded-2xl">Play Again</button>
+      <button onclick="goTitle()" class="btn bg-orange-600 text-white text-3xl font-black px-8 py-5 rounded-2xl">Title Screen</button>
+      <a href="index.html" class="btn bg-gray-700 text-white text-3xl font-black px-8 py-5 rounded-2xl">Main Menu</a>
+    </div>
+  </div>`;
+  sfxEscape();
+}
+
+function goTitle(){ sfxClick(); state={screen:'title',puzzleIdx:0,solved:0,feedback:null}; renderTitle(); }
+
+function startGame(){
+  sfxClick();
+  state.puzzleIdx=0; state.solved=0; state.feedback=null;
+  state.screen='game';
+  renderGame();
+}
+
+function pickAmend(a){
+  const p = PUZZLES[state.puzzleIdx];
+  const correct = a===p.correct;
+  state.feedback = {correct, pick:a};
+  if(correct){ sfxUnlock(); state.solved++; }
+  else sfxWrong();
+  renderGame();
+}
+
+function clearFeedback(){
+  sfxClick();
+  state.feedback = null;
+  renderGame();
+}
+
+function advance(){
+  sfxClick();
+  state.feedback = null;
+  state.puzzleIdx++;
+  if(state.puzzleIdx>=PUZZLES.length){
+    state.screen='win';
+    renderWin();
+  } else {
+    renderGame();
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.key==='Enter'||e.key===' ') && state.feedback){
+    e.preventDefault();
+    if(state.feedback.correct) advance();
+    else clearFeedback();
+  }
+});
+
+renderTitle();
+</script>
+</body>
+</html>

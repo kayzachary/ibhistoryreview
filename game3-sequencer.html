@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order in the Court! — Trial Sequencer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body{background:#FAF5EA;color:#1A202C;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .vocab{color:#EA580C;font-weight:800}
+  .menu-bar{position:fixed;bottom:0;left:0;right:0;background:#1E3A8A;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;z-index:50}
+  .tip{background:#ECFCCB;border-left:10px solid #65A30D;color:#365314}
+  .btn{transition:transform .08s ease}
+  .btn:active{transform:translateY(2px)}
+  .card{background:#FFFBEF;border:4px solid #1E3A8A;color:#1E3A8A;cursor:pointer;transition:transform .1s, box-shadow .1s}
+  .card:hover{transform:translateY(-3px);box-shadow:0 6px 0 #1E3A8A}
+  .card.selected{background:#FEF3C7;border-color:#EA580C;color:#7C2D12;transform:translateY(-3px);box-shadow:0 6px 0 #EA580C}
+  .card.placed{opacity:.4;cursor:default}
+  .slot{background:#FFF;border:4px dashed #94A3B8;color:#64748B;min-height:120px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:10px;text-align:center}
+  .slot.filled{border-style:solid;background:#DBEAFE;border-color:#1E3A8A;color:#1E3A8A;font-weight:800}
+  .slot.wrong{animation:shake .5s;background:#FEE2E2;border-color:#DC2626;color:#991B1B}
+  .slot.correct{background:#DCFCE7;border-color:#16A34A;color:#14532D;box-shadow:0 0 20px #22C55E}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+  .correct-panel{background:#DCFCE7;border:5px solid #16A34A;color:#14532D}
+  .wrong-panel{background:#FEE2E2;border:5px solid #DC2626;color:#7F1D1D}
+</style>
+</head>
+<body class="min-h-screen pb-20">
+<div id="app"></div>
+
+<script>
+let ctx;
+function initAudio(){ if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+function tone(f,d,t='sine',v=0.25){
+  initAudio();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=t; o.frequency.value=f;
+  g.gain.setValueAtTime(v,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);
+  o.connect(g).connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+d);
+}
+function sfxClick(){tone(620,0.05)}
+function sfxPlace(){tone(500,0.08,'triangle',0.2)}
+function sfxCorrect(){tone(659,0.12);setTimeout(()=>tone(988,0.22),110)}
+function sfxWrong(){tone(180,0.35,'sawtooth',0.2)}
+function sfxWin(){[523,659,784,1047,1318].forEach((f,i)=>setTimeout(()=>tone(f,0.22),i*140))}
+
+const VOCAB = ['opening statement','direct examination','cross-examination','closing statement','rebuttal','verdict','probable cause','indictment','arraignment','affirm','reverse','remand','appeal','felony','misdemeanor','grand jury'];
+function hl(text){
+  let out = text;
+  const sorted = [...VOCAB].sort((a,b)=>b.length-a.length);
+  sorted.forEach(w=>{
+    const rx = new RegExp('('+w.replace(/ /g,'\\s+')+')','gi');
+    out = out.replace(rx,'<span class="vocab">$1</span>');
+  });
+  return out;
+}
+
+const ROUNDS = [
+  {title:'Round 1 — Trial Steps',
+   subtitle:'The order of events within a trial.',
+   steps:[
+     {name:'Opening Statement', why:'Each side previews the evidence they plan to present.'},
+     {name:'Direct Examination', why:'Each side questions its own witnesses.'},
+     {name:'Cross-Examination', why:'The other side questions the witnesses to challenge testimony.'},
+     {name:'Closing Statement', why:'Each side summarizes the evidence and argues for their verdict.'},
+     {name:'Rebuttal', why:'Prosecutor/plaintiff gets one last chance to respond.'},
+     {name:'Verdict', why:'Judge or jury decides; unanimous required for serious crimes.'}
+   ]},
+  {title:'Round 2 — Criminal Case Path',
+   subtitle:'Stages of a criminal case from arrest to sentencing.',
+   steps:[
+     {name:'Arrest', why:'Police take the suspect into custody with probable cause.'},
+     {name:'Initial Appearance', why:'Defendant sees a judge within 24 hours.'},
+     {name:'Grand Jury Indictment', why:'Citizens decide if there is enough evidence to charge (felonies).'},
+     {name:'Arraignment', why:'Defendant enters plea (guilty, not guilty, no contest).'},
+     {name:'Trial', why:'Jury hears evidence and arguments.'},
+     {name:'Verdict / Sentencing', why:'Decision and punishment if guilty.'}
+   ]},
+  {title:'Round 3 — Appeals Path',
+   subtitle:'How a case moves up to the appellate courts.',
+   steps:[
+     {name:'Trial Court Verdict', why:'One side loses and decides to appeal.'},
+     {name:'Notice of Appeal Filed', why:'Paperwork begins the process.'},
+     {name:'Appellate Briefs Submitted', why:'Written arguments from both sides.'},
+     {name:'Oral Arguments', why:'Attorneys argue before the appellate judges.'},
+     {name:'Appellate Court Ruling', why:'Judges issue a written opinion.'},
+     {name:'Affirm / Reverse / Remand', why:'Uphold, overturn, or send back.'}
+   ]}
+];
+
+let state = {
+  screen:'title',
+  round:0,
+  cards:[], // shuffled steps with .placedInSlot index (-1 if unplaced)
+  slots:[], // array length 6; each = card index or null
+  selectedCard:null,
+  locked:false,
+  checkResult:null // {correct:bool, wrongSlots:[]}
+};
+
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+
+const app = document.getElementById('app');
+
+function menuBar(){
+  return `<div class="menu-bar text-2xl">
+    <button onclick="goTitle()" class="btn bg-white text-blue-900 font-black px-5 py-2 rounded-lg">&larr; Main Menu</button>
+    <div class="font-bold">Game 3 — Order in the Court!</div>
+    <div class="font-mono">Round ${state.round+1} / 3</div>
+  </div>`;
+}
+
+function renderTitle(){
+  app.innerHTML = `
+  <div class="p-10 max-w-6xl mx-auto">
+    <h1 class="text-7xl font-black text-blue-900 mb-4">Order in the Court!</h1>
+    <h2 class="text-4xl text-orange-600 font-bold mb-8">Trial Sequencer</h2>
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-8 text-3xl leading-relaxed mb-6">
+      <p class="mb-4"><b>How to play:</b> Click a card, then click a numbered slot to place it. Rearrange any time.</p>
+      <p class="mb-4">Click "Check Order" to lock in your answer. Wrong cards shake red; correct cards glow green.</p>
+      <p><b>Goal:</b> Complete 3 rounds of increasing difficulty.</p>
+    </div>
+    <div class="tip p-6 text-3xl rounded-xl mb-8">
+      <b>Rounds:</b> (1) Trial Steps &rarr; (2) Criminal Case Path &rarr; (3) Appeals Path.
+    </div>
+    <button onclick="startGame()" class="btn bg-blue-900 text-white text-4xl font-black px-10 py-6 rounded-2xl shadow-lg">Start Game</button>
+  </div>`;
+}
+
+function renderGame(){
+  const round = ROUNDS[state.round];
+  app.innerHTML = `
+  <div class="p-6 max-w-7xl mx-auto">
+    <div class="mb-4">
+      <div class="text-4xl font-black text-blue-900">${round.title}</div>
+      <div class="text-2xl text-gray-700">${round.subtitle}</div>
+    </div>
+
+    <div class="mb-4">
+      <div class="text-xl font-bold mb-2 text-gray-600">CARDS — click one to pick it up</div>
+      <div class="grid grid-cols-6 gap-3">
+        ${state.cards.map((c,i)=>{
+          const placed = state.slots.includes(i);
+          const sel = state.selectedCard===i;
+          return `<div class="card ${placed?'placed':''} ${sel?'selected':''} rounded-xl p-4 text-2xl font-black text-center" onclick="pickCard(${i})">
+            ${hl(c.name)}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="text-xl font-bold mb-2 text-gray-600">PLACE IN ORDER</div>
+      <div class="grid grid-cols-6 gap-3">
+        ${state.slots.map((cardIdx,i)=>{
+          const card = cardIdx!==null ? state.cards[cardIdx] : null;
+          let cls = 'slot rounded-xl text-2xl font-bold';
+          if(card) cls += ' filled';
+          if(state.checkResult){
+            if(state.checkResult.wrongSlots.includes(i)) cls += ' wrong';
+            else cls += ' correct';
+          }
+          return `<div class="${cls}" onclick="placeSlot(${i})">
+            <div>
+              <div class="text-sm text-gray-500 mb-1">Step ${i+1}</div>
+              ${card?hl(card.name):'<span class="text-xl">(empty)</span>'}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="flex gap-3 mt-4">
+      <button onclick="checkOrder()" ${state.slots.some(s=>s===null)?'disabled':''} class="btn bg-blue-900 text-white text-3xl font-black px-8 py-4 rounded-xl ${state.slots.some(s=>s===null)?'opacity-40':''}">Check Order</button>
+      <button onclick="resetRound()" class="btn bg-gray-600 text-white text-2xl font-black px-6 py-4 rounded-xl">Reset</button>
+    </div>
+
+    ${renderFeedback()}
+  </div>
+  ${menuBar()}`;
+}
+
+function renderFeedback(){
+  if(!state.checkResult) return '';
+  const r = state.checkResult;
+  if(r.correct){
+    const round = ROUNDS[state.round];
+    return `<div class="correct-panel rounded-2xl p-8 mt-6">
+      <div class="text-5xl font-black mb-4">✓ Correct order!</div>
+      <div class="text-2xl mb-5">
+        ${round.steps.map((s,i)=>`<div class="mb-2"><b>${i+1}. ${hl(s.name)}</b> — ${hl(s.why)}</div>`).join('')}
+      </div>
+      <button onclick="nextRound()" class="btn bg-green-700 text-white text-3xl font-black px-8 py-4 rounded-xl">${state.round<2?'Next Round':'See Study Guide'} &rarr; (Enter)</button>
+    </div>`;
+  }
+  return `<div class="wrong-panel rounded-2xl p-8 mt-6">
+    <div class="text-5xl font-black mb-3">✗ ${r.wrongSlots.length} placement${r.wrongSlots.length===1?'':'s'} are out of order</div>
+    <div class="text-3xl mb-4 leading-snug">The red slots are wrong. Green slots are in the right spot. Fix the red ones and try again.</div>
+    <button onclick="clearCheck()" class="btn bg-red-700 text-white text-3xl font-black px-8 py-4 rounded-xl">Keep Trying (Enter)</button>
+  </div>`;
+}
+
+function renderWin(){
+  app.innerHTML = `
+  <div class="p-10 max-w-6xl mx-auto">
+    <h1 class="text-7xl font-black text-blue-900 mb-6">Study Guide</h1>
+    <div class="text-4xl font-black text-green-700 mb-6">All 3 rounds complete!</div>
+    ${ROUNDS.map(r=>`
+      <div class="bg-white border-4 border-blue-900 rounded-2xl p-6 mb-5">
+        <div class="text-3xl font-black text-blue-900 mb-3">${r.title}</div>
+        ${r.steps.map((s,i)=>`<div class="text-2xl mb-2 pl-2">
+          <b>${i+1}. ${hl(s.name)}</b> &mdash; ${hl(s.why)}${i<r.steps.length-1?' <span class="text-orange-600 font-black">&rarr;</span>':''}
+        </div>`).join('')}
+      </div>`).join('')}
+    <div class="flex gap-4 flex-wrap">
+      <button onclick="startGame()" class="btn bg-blue-900 text-white text-3xl font-black px-8 py-5 rounded-2xl">Play Again</button>
+      <button onclick="goTitle()" class="btn bg-orange-600 text-white text-3xl font-black px-8 py-5 rounded-2xl">Title Screen</button>
+      <a href="index.html" class="btn bg-gray-700 text-white text-3xl font-black px-8 py-5 rounded-2xl">Main Menu</a>
+    </div>
+  </div>`;
+  sfxWin();
+}
+
+function goTitle(){ sfxClick(); state={screen:'title',round:0,cards:[],slots:[],selectedCard:null,locked:false,checkResult:null}; renderTitle(); }
+
+function startGame(){
+  sfxClick();
+  state.round = 0;
+  loadRound();
+  state.screen='game';
+  renderGame();
+}
+
+function loadRound(){
+  const round = ROUNDS[state.round];
+  const indexed = round.steps.map((s,i)=>({...s, correctIndex:i}));
+  state.cards = shuffle(indexed);
+  state.slots = [null,null,null,null,null,null];
+  state.selectedCard = null;
+  state.checkResult = null;
+}
+
+function pickCard(i){
+  if(state.checkResult) return;
+  if(state.slots.includes(i)) return;
+  sfxClick();
+  state.selectedCard = state.selectedCard===i?null:i;
+  renderGame();
+}
+
+function placeSlot(i){
+  if(state.checkResult) return;
+  // if slot filled and no card selected, remove it back to deck
+  if(state.slots[i]!==null && state.selectedCard===null){
+    sfxClick();
+    state.slots[i] = null;
+    renderGame();
+    return;
+  }
+  if(state.selectedCard===null) return;
+  sfxPlace();
+  // clear any prior slot containing this card
+  const prior = state.slots.indexOf(state.selectedCard);
+  if(prior>=0) state.slots[prior] = null;
+  // if target had a card, swap it out (goes back to deck)
+  state.slots[i] = state.selectedCard;
+  state.selectedCard = null;
+  renderGame();
+}
+
+function checkOrder(){
+  if(state.slots.some(s=>s===null)) return;
+  const wrong = [];
+  state.slots.forEach((cardIdx,slotIdx)=>{
+    if(state.cards[cardIdx].correctIndex !== slotIdx) wrong.push(slotIdx);
+  });
+  state.checkResult = {correct:wrong.length===0, wrongSlots:wrong};
+  if(wrong.length===0) sfxCorrect();
+  else sfxWrong();
+  renderGame();
+}
+
+function clearCheck(){
+  sfxClick();
+  // remove wrong cards from their slots
+  const wrong = state.checkResult.wrongSlots;
+  wrong.forEach(i=>{ state.slots[i] = null; });
+  state.checkResult = null;
+  renderGame();
+}
+
+function nextRound(){
+  sfxClick();
+  state.round++;
+  if(state.round>=ROUNDS.length){
+    state.screen='win';
+    renderWin();
+  } else {
+    loadRound();
+    renderGame();
+  }
+}
+
+function resetRound(){
+  sfxClick();
+  loadRound();
+  renderGame();
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.key==='Enter'||e.key===' ') && state.checkResult){
+    e.preventDefault();
+    if(state.checkResult.correct) nextRound();
+    else clearCheck();
+  }
+});
+
+renderTitle();
+</script>
+</body>
+</html>

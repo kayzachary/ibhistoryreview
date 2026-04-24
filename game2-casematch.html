@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Name That Landmark — Case Match</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  html,body{background:#FAF5EA;color:#1A202C;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .vocab{color:#EA580C;font-weight:800}
+  .card{perspective:1000px;cursor:pointer}
+  .card-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+  .card.flipped .card-inner, .card.matched .card-inner{transform:rotateY(180deg)}
+  .card-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:14px;text-align:center;font-weight:800}
+  .card-back{background:#1E3A8A;color:#fff;border:4px solid #1E3A8A;font-size:3.5rem}
+  .card-front{background:#FFFBEF;color:#1A202C;border:4px solid #1E3A8A;transform:rotateY(180deg);font-size:1.5rem;line-height:1.2}
+  .card.matched .card-front{background:#DCFCE7;border-color:#16A34A;color:#14532D}
+  .menu-bar{position:fixed;bottom:0;left:0;right:0;background:#1E3A8A;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;z-index:50}
+  .tip{background:#ECFCCB;border-left:10px solid #65A30D;color:#365314}
+  .learn-panel{background:#DCFCE7;border:5px solid #16A34A;color:#14532D}
+  .btn{transition:transform .08s ease}
+  .btn:active{transform:translateY(2px)}
+</style>
+</head>
+<body class="min-h-screen pb-20">
+<div id="app"></div>
+
+<script>
+let ctx;
+function initAudio(){ if(!ctx) ctx = new (window.AudioContext||window.webkitAudioContext)(); }
+function tone(f,d,t='sine',v=0.25){
+  initAudio();
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type=t; o.frequency.value=f;
+  g.gain.setValueAtTime(v,ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+d);
+  o.connect(g).connect(ctx.destination);
+  o.start(); o.stop(ctx.currentTime+d);
+}
+function sfxClick(){tone(620,0.05)}
+function sfxFlip(){tone(440,0.08,'triangle',0.2)}
+function sfxMatch(){tone(659,0.1);setTimeout(()=>tone(988,0.18),90);setTimeout(()=>tone(1318,0.22),220)}
+function sfxNoMatch(){tone(180,0.2,'sawtooth',0.2)}
+function sfxWin(){[523,659,784,1047,1318,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.25),i*130))}
+
+const VOCAB = ['judicial review','exclusionary rule','Miranda warning','self-incrimination','double jeopardy','reasonable suspicion','incorporation','probable cause','lawyer','felony','misdemeanor','amendment'];
+function hl(text){
+  let out = text;
+  const sorted = [...VOCAB].sort((a,b)=>b.length-a.length);
+  sorted.forEach(w=>{
+    const rx = new RegExp('('+w.replace(/ /g,'\\s+')+')','gi');
+    out = out.replace(rx,'<span class="vocab">$1</span>');
+  });
+  return out;
+}
+
+const CASES = [
+  {id:1, name:'Marbury v. Madison', year:1803,
+   holding:'Established judicial review — the Supreme Court can strike down unconstitutional laws.',
+   mnemonic:'M = Marshall Made judicial review.'},
+  {id:2, name:'Mapp v. Ohio', year:1961,
+   holding:'Exclusionary rule applies to states (4th Amendment) — illegally obtained evidence cannot be used.',
+   mnemonic:'Mapp = Maps Out the exclusionary rule.'},
+  {id:3, name:'Gideon v. Wainwright', year:1963,
+   holding:'States must provide a lawyer to defendants who cannot afford one (6th Amendment).',
+   mnemonic:'Gideon gets you a lawyer.'},
+  {id:4, name:'Malloy v. Hogan', year:1964,
+   holding:'Self-incrimination protection applies to states (5th Amendment).',
+   mnemonic:'Malloy = "Not My-Loy words" — you cannot be forced to testify.'},
+  {id:5, name:'Miranda v. Arizona', year:1966,
+   holding:'Police must issue the Miranda warning before interrogating a suspect in custody.',
+   mnemonic:'Miranda = Must Inform Rights And Notify Defendant of Attorney.'},
+  {id:6, name:'Benton v. Maryland', year:1969,
+   holding:'Double jeopardy protection applies to states (5th Amendment).',
+   mnemonic:'Benton Bans retrials — cannot be tried twice for the same crime.'},
+  {id:7, name:'New Jersey v. T.L.O.', year:1985,
+   holding:'School searches only require reasonable suspicion, not probable cause.',
+   mnemonic:'T.L.O. = Teens Lower the Obstacle (for school searches).'},
+  {id:8, name:'Gitlow v. New York', year:1925,
+   holding:'First major incorporation case — applied free speech to the states.',
+   mnemonic:'Gitlow got the 1st Amendment into the states.'}
+];
+
+let state = {
+  screen:'title',
+  twoPlayer:false,
+  currentPlayer:1,
+  scoreP1:0, scoreP2:0,
+  deck:[], // {id, type:'case'|'holding', matched, flipped}
+  flipped:[], // indices currently face-up in this turn
+  busy:false,
+  learn:null,
+  startTime:0
+};
+
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; }
+
+function buildDeck(){
+  const cards = [];
+  CASES.forEach(c=>{
+    cards.push({id:c.id, type:'case', matched:false, flipped:false});
+    cards.push({id:c.id, type:'holding', matched:false, flipped:false});
+  });
+  return shuffle(cards);
+}
+
+const app = document.getElementById('app');
+
+function menuBar(){
+  return `<div class="menu-bar text-2xl">
+    <button onclick="goTitle()" class="btn bg-white text-blue-900 font-black px-5 py-2 rounded-lg">&larr; Main Menu</button>
+    <div class="font-bold">Game 2 — Name That Landmark</div>
+    <div class="font-mono">${state.twoPlayer?`P1:${state.scoreP1}  P2:${state.scoreP2}  |  Turn: P${state.currentPlayer}`:`Matches: ${state.scoreP1}/8`}</div>
+  </div>`;
+}
+
+function renderTitle(){
+  app.innerHTML = `
+  <div class="p-10 max-w-6xl mx-auto">
+    <h1 class="text-7xl font-black text-blue-900 mb-4">Name That Landmark</h1>
+    <h2 class="text-4xl text-orange-600 font-bold mb-8">Case Match — Memory Game</h2>
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-8 text-3xl leading-relaxed mb-6">
+      <p class="mb-4"><b>How to play:</b> Flip 2 cards per turn. Match the case name with its holding.</p>
+      <p class="mb-4">Match = points + LEARN card. No match = cards flip back.</p>
+      <p><b>Goal:</b> Match all 8 landmark Supreme Court cases.</p>
+    </div>
+    <div class="tip p-6 text-3xl rounded-xl mb-8">
+      <b>Tip:</b> Most of these cases are from the <b>Warren Court (1961–1969)</b> — the era of <span class="vocab">incorporation</span>, when the Supreme Court applied the Bill of Rights to the states.
+    </div>
+    <div class="flex gap-6 flex-wrap">
+      <button onclick="startGame(false)" class="btn bg-blue-900 text-white text-4xl font-black px-10 py-6 rounded-2xl shadow-lg">1 Player</button>
+      <button onclick="startGame(true)" class="btn bg-orange-600 text-white text-4xl font-black px-10 py-6 rounded-2xl shadow-lg">2 Players</button>
+    </div>
+  </div>`;
+}
+
+function renderGame(){
+  app.innerHTML = `
+  <div class="p-6 max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-4">
+      <div class="text-2xl font-bold text-blue-900">Matches: ${state.scoreP1+state.scoreP2} / 8</div>
+      ${state.twoPlayer?`<div class="text-3xl font-black ${state.currentPlayer===1?'text-blue-900':'text-orange-600'}">Player ${state.currentPlayer}'s turn</div>`:''}
+    </div>
+    <div class="grid grid-cols-4 gap-4" style="height:62vh">
+      ${state.deck.map((card,i)=>{
+        const caseData = CASES.find(c=>c.id===card.id);
+        const flipped = card.flipped || card.matched;
+        const front = card.type==='case'
+          ? `<div><div class="text-3xl font-black mb-2">${caseData.name}</div><div class="text-2xl text-blue-900">(${caseData.year})</div></div>`
+          : `<div class="text-xl leading-tight">${hl(caseData.holding)}</div>`;
+        return `<div class="card ${flipped?'flipped':''} ${card.matched?'matched':''}" onclick="flipCard(${i})">
+          <div class="card-inner h-full">
+            <div class="card-face card-back">?</div>
+            <div class="card-face card-front">${front}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${state.learn?renderLearn():''}
+  </div>
+  ${menuBar()}`;
+}
+
+function renderLearn(){
+  const l = state.learn;
+  const c = CASES.find(x=>x.id===l.id);
+  return `<div class="fixed inset-0 bg-black/50 flex items-center justify-center p-8 z-40">
+    <div class="learn-panel rounded-3xl p-10 max-w-4xl w-full">
+      <div class="text-5xl font-black mb-4">✓ Match!</div>
+      <div class="text-4xl font-black mb-3">${c.name} <span class="text-blue-900">(${c.year})</span></div>
+      <div class="text-3xl mb-5 leading-snug">${hl(c.holding)}</div>
+      <div class="tip p-5 rounded-xl text-3xl mb-6">
+        <b>Memory hook:</b> ${c.mnemonic}
+      </div>
+      <button onclick="dismissLearn()" class="btn bg-green-700 text-white text-3xl font-black px-8 py-4 rounded-xl">NEXT &rarr; (Enter)</button>
+    </div>
+  </div>`;
+}
+
+function renderWin(){
+  const total = 8;
+  let summary;
+  if(state.twoPlayer){
+    const winner = state.scoreP1>state.scoreP2?'Player 1 Wins!':state.scoreP2>state.scoreP1?'Player 2 Wins!':'Tie Game!';
+    summary = `<div class="text-5xl font-black text-orange-600 mb-4">${winner}</div>
+      <div class="text-3xl mb-2">Player 1: ${state.scoreP1} matches</div>
+      <div class="text-3xl mb-6">Player 2: ${state.scoreP2} matches</div>`;
+  } else {
+    summary = `<div class="text-5xl font-black text-green-700 mb-6">All 8 cases matched!</div>`;
+  }
+  const chron = [...CASES].sort((a,b)=>a.year-b.year);
+  app.innerHTML = `
+  <div class="p-10 max-w-6xl mx-auto">
+    <h1 class="text-7xl font-black text-blue-900 mb-6">Study Guide — Landmark Cases</h1>
+    ${summary}
+    <div class="tip p-6 text-3xl rounded-xl mb-6">
+      <b>The Warren Court (1961–1969)</b> drove the era of <span class="vocab">incorporation</span> — applying Bill of Rights protections to the states.
+    </div>
+    <div class="bg-white border-4 border-blue-900 rounded-2xl p-6 text-2xl mb-8">
+      <div class="space-y-4">
+        ${chron.map(c=>`<div class="border-b-2 pb-3 last:border-0">
+          <div class="text-3xl font-black">${c.year} — ${c.name}</div>
+          <div class="text-2xl leading-snug mt-1">${hl(c.holding)}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="flex gap-4 flex-wrap">
+      <button onclick="startGame(state.twoPlayer)" class="btn bg-blue-900 text-white text-3xl font-black px-8 py-5 rounded-2xl">Play Again</button>
+      <button onclick="goTitle()" class="btn bg-orange-600 text-white text-3xl font-black px-8 py-5 rounded-2xl">Title Screen</button>
+      <a href="index.html" class="btn bg-gray-700 text-white text-3xl font-black px-8 py-5 rounded-2xl">Main Menu</a>
+    </div>
+  </div>`;
+  sfxWin();
+}
+
+function goTitle(){ sfxClick(); state={screen:'title',twoPlayer:false,currentPlayer:1,scoreP1:0,scoreP2:0,deck:[],flipped:[],busy:false,learn:null,startTime:0}; renderTitle(); }
+
+function startGame(twoPlayer){
+  sfxClick();
+  state.twoPlayer = twoPlayer;
+  state.scoreP1=0; state.scoreP2=0; state.currentPlayer=1;
+  state.deck = buildDeck();
+  state.flipped = []; state.busy=false; state.learn=null;
+  state.screen='game';
+  renderGame();
+}
+
+function flipCard(i){
+  if(state.busy||state.learn) return;
+  const card = state.deck[i];
+  if(card.matched||card.flipped) return;
+  sfxFlip();
+  card.flipped = true;
+  state.flipped.push(i);
+  renderGame();
+  if(state.flipped.length===2){
+    state.busy=true;
+    const [a,b] = state.flipped;
+    const cA = state.deck[a], cB = state.deck[b];
+    if(cA.id===cB.id && cA.type!==cB.type){
+      setTimeout(()=>{
+        cA.matched=true; cB.matched=true;
+        if(state.currentPlayer===1) state.scoreP1++; else state.scoreP2++;
+        state.flipped=[];
+        state.learn = {id:cA.id};
+        sfxMatch();
+        renderGame();
+      },600);
+    } else {
+      setTimeout(()=>{
+        cA.flipped=false; cB.flipped=false;
+        state.flipped=[];
+        state.busy=false;
+        sfxNoMatch();
+        if(state.twoPlayer) state.currentPlayer = state.currentPlayer===1?2:1;
+        renderGame();
+      },1500);
+    }
+  }
+}
+
+function dismissLearn(){
+  sfxClick();
+  state.learn=null;
+  state.busy=false;
+  if(state.scoreP1+state.scoreP2>=8){
+    state.screen='win';
+    renderWin();
+  } else {
+    renderGame();
+  }
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.key==='Enter'||e.key===' ') && state.learn){ e.preventDefault(); dismissLearn(); }
+});
+
+renderTitle();
+</script>
+</body>
+</html>
