@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IB History A2 Review — Iran, Saudi Arabia & Egypt · v4</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #060CE9;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ══════════════════════════════════════════
+   TITLE SCREEN
+══════════════════════════════════════════ */
+#title-screen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  background: #060CE9;
+}
+
+.title-eyebrow {
+  font-size: .8rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #FFD700;
+  opacity: .7;
+  margin-bottom: 20px;
+}
+
+.title-main {
+  font-size: clamp(2.4rem, 7vw, 4.8rem);
+  font-weight: bold;
+  color: #FFD700;
+  text-shadow: 0 4px 18px rgba(0,0,0,.6), 0 0 40px #FFD70044;
+  letter-spacing: 3px;
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+
+.title-sub {
+  font-size: 1.1rem;
+  color: #FFD700;
+  opacity: .75;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.title-date {
+  font-size: .8rem;
+  color: #aaa;
+  letter-spacing: 2px;
+  margin-bottom: 56px;
+}
+
+.title-btn-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.btn-start {
+  background: #FFD700;
+  color: #060CE9;
+  border: none;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 18px 60px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+  transition: transform .12s, box-shadow .12s;
+}
+.btn-start:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,.5); }
+.btn-start:active { transform: translateY(0); }
+
+.btn-study {
+  background: transparent;
+  color: #FFD700;
+  border: 2.5px solid #FFD700;
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 16px 50px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.btn-study:hover { background: #FFD700; color: #060CE9; }
+
+.title-hint {
+  font-size: .75rem;
+  color: rgba(255,255,255,.35);
+  letter-spacing: 1px;
+}
+
+.title-divider {
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(to right, transparent, #FFD700, transparent);
+  margin: 32px auto;
+  opacity: .5;
+}
+
+/* category pill preview */
+.cat-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 600px;
+  margin-bottom: 48px;
+}
+.cat-pill {
+  padding: 6px 16px;
+  border: 1px solid rgba(255,215,0,.4);
+  border-radius: 20px;
+  font-size: .75rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,215,0,.7);
+}
+
+/* ══════════════════════════════════════════
+   BOARD SCREEN
+══════════════════════════════════════════ */
+#board-screen { display: none; padding: 20px 16px 32px; }
+
+.game-title {
+  text-align: center;
+  font-size: 2rem;
+  color: #FFD700;
+  text-shadow: 2px 2px 6px #000;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.game-sub {
+  text-align: center;
+  color: #FFD700;
+  opacity: .7;
+  font-size: .85rem;
+  letter-spacing: 1px;
+  margin-bottom: 14px;
+}
+
+/* Control toolbar */
+.control-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 900px;
+  margin: 0 auto 18px;
+}
+.ctrl-btn {
+  padding: 6px 16px;
+  font-family: Georgia, serif;
+  font-size: .78rem;
+  letter-spacing: .5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+}
+.ctrl-reset-board  { background: transparent; color: #FFD700; border: 1.5px solid #FFD700; }
+.ctrl-reset-scores { background: transparent; color: #e74c3c; border: 1.5px solid #e74c3c; }
+.ctrl-reset-all    { background: #e74c3c; color: #fff; border: 1.5px solid #e74c3c; font-weight: bold; }
+.ctrl-title        { background: transparent; color: rgba(255,255,255,.5); border: 1.5px solid rgba(255,255,255,.3); }
+.ctrl-btn:hover    { opacity: .8; }
+
+/* Score strip */
+.scores {
+  display: flex;
+  gap: 10px;
+  max-width: 900px;
+  margin: 0 auto 20px;
+}
+.team {
+  flex: 1;
+  background: #03088a;
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+.team-label { font-size: .75rem; text-transform: uppercase; letter-spacing: 1px; color: #FFD700; }
+.team-score { font-size: 2rem; font-weight: bold; }
+
+/* Jeopardy board */
+.board {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.cat-header {
+  background: #060CE9;
+  color: #FFD700;
+  border: 3px solid #000;
+  font-size: .78rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding: 12px 6px;
+  text-align: center;
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.cat-header:hover { background: #0a0fcc; }
+.cat-header.all-used { opacity: .45; }
+
+.cell {
+  background: #060CE9;
+  color: #FFD700;
+  border: 3px solid #000;
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  padding: 16px 6px;
+  cursor: pointer;
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+  user-select: none;
+}
+.cell:hover  { background: #1a1aff; }
+.cell.used   { background: #03088a; color: #03088a; cursor: default; pointer-events: none; }
+
+/* ══════════════════════════════════════════
+   TEACHER DIRECTIONS BOX
+══════════════════════════════════════════ */
+.teacher-box {
+  max-width: 900px;
+  margin: 28px auto 0;
+  background: #03088a;
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  padding: 18px 22px;
+  font-size: .85rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.92);
+}
+.teacher-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.teacher-box-title {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #FFD700;
+  font-weight: bold;
+}
+.teacher-box-toggle {
+  font-size: 1.1rem;
+  color: #FFD700;
+  transition: transform .2s;
+}
+.teacher-box.collapsed .teacher-box-toggle { transform: rotate(-90deg); }
+.teacher-box-body { margin-top: 14px; }
+.teacher-box.collapsed .teacher-box-body { display: none; }
+.teacher-box-body ol { padding-left: 20px; }
+.teacher-box-body li { margin-bottom: 8px; }
+.teacher-box-body strong { color: #FFD700; }
+.teacher-box-section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,215,0,.25);
+}
+.teacher-box-section-title {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #FFD700;
+  margin-bottom: 6px;
+}
+
+/* ══════════════════════════════════════════
+   QUESTION SCREEN
+══════════════════════════════════════════ */
+#question-screen {
+  display: none;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.q-cat   { font-size: .9rem; text-transform: uppercase; letter-spacing: 2px; color: #FFD700; margin-bottom: 8px; }
+.q-pts   { font-size: 1.4rem; font-weight: bold; color: #FFD700; margin-bottom: 28px; }
+.q-text  { font-size: 1.35rem; max-width: 780px; line-height: 1.65; margin-bottom: 36px; }
+
+.q-answer {
+  display: none;
+  font-size: 1.1rem;
+  max-width: 780px;
+  background: #03088a;
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  padding: 22px 26px;
+  line-height: 1.65;
+  margin-bottom: 32px;
+  text-align: left;
+}
+.answer-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #FFD700;
+  margin-bottom: 10px;
+}
+
+/* Buttons */
+.btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 28px; }
+.btn {
+  padding: 11px 24px;
+  font-size: .95rem;
+  font-family: Georgia, serif;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn:hover { opacity: .85; }
+.btn-reveal { background: #FFD700; color: #000; border: none; font-weight: bold; }
+.btn-back   { background: transparent; color: #FFD700; border: 2px solid #FFD700; }
+.btn-skip   { background: transparent; color: rgba(255,255,255,.4); border: 2px solid rgba(255,255,255,.25); font-size: .85rem; }
+
+/* Score controls inside question screen */
+.score-panel {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+.score-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.score-group-label { font-size: .75rem; text-transform: uppercase; letter-spacing: 1px; color: #FFD700; }
+.score-group-score { font-size: 1.4rem; font-weight: bold; }
+.score-group-btns  { display: flex; gap: 6px; }
+.sbtn {
+  padding: 5px 14px;
+  font-family: Georgia, serif;
+  font-size: .8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1.5px solid #FFD700;
+  background: transparent;
+  color: #FFD700;
+  transition: background .15s, color .15s;
+}
+.sbtn.plus:hover  { background: #2ecc40; border-color: #2ecc40; color: #000; }
+.sbtn.minus:hover { background: #e74c3c; border-color: #e74c3c; color: #fff; }
+
+/* Teacher reminder on question screen */
+.teacher-reminder {
+  max-width: 780px;
+  margin: 0 auto;
+  background: #03088a;
+  border: 1.5px solid rgba(255,215,0,.5);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: .8rem;
+  color: rgba(255,255,255,.85);
+  line-height: 1.55;
+  text-align: left;
+}
+.teacher-reminder strong { color: #FFD700; }
+
+/* ══════════════════════════════════════════
+   STUDY MODE
+══════════════════════════════════════════ */
+#study-screen {
+  display: none;
+  min-height: 100vh;
+  padding: 40px 24px 60px;
+}
+.study-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+.study-title {
+  font-size: 2.2rem;
+  color: #FFD700;
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 6px #000;
+  margin-bottom: 8px;
+}
+.study-sub {
+  color: #FFD700;
+  opacity: .7;
+  font-size: .9rem;
+  letter-spacing: 1.5px;
+  margin-bottom: 18px;
+}
+.study-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.study-ctrl-btn {
+  padding: 8px 18px;
+  font-family: Georgia, serif;
+  font-size: .8rem;
+  letter-spacing: .5px;
+  border-radius: 5px;
+  cursor: pointer;
+  background: transparent;
+  color: #FFD700;
+  border: 1.5px solid #FFD700;
+  transition: background .15s, color .15s;
+}
+.study-ctrl-btn:hover { background: #FFD700; color: #060CE9; }
+
+.study-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.study-category {
+  background: #03088a;
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.study-category-header {
+  background: linear-gradient(to bottom, #060CE9, #03088a);
+  color: #FFD700;
+  font-size: 1.05rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 14px 20px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #FFD700;
+}
+.study-category-header:hover { background: #0a0fcc; }
+.study-category.collapsed .study-category-header { border-bottom: none; }
+.study-category-toggle { font-size: 1rem; transition: transform .2s; }
+.study-category.collapsed .study-category-toggle { transform: rotate(-90deg); }
+.study-category-body { padding: 6px 0; }
+.study-category.collapsed .study-category-body { display: none; }
+
+.study-qa {
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(255,215,0,.18);
+}
+.study-qa:last-child { border-bottom: none; }
+.study-q-line {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.study-pts-tag {
+  flex-shrink: 0;
+  background: #FFD700;
+  color: #060CE9;
+  font-weight: bold;
+  font-size: .8rem;
+  padding: 3px 10px;
+  border-radius: 4px;
+  letter-spacing: .5px;
+}
+.study-q-text {
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #fff;
+}
+.study-a-block {
+  background: rgba(255,215,0,.08);
+  border-left: 3px solid #FFD700;
+  padding: 10px 14px;
+  margin-left: 8px;
+  border-radius: 0 6px 6px 0;
+  font-size: .92rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.92);
+}
+.study-a-label {
+  font-size: .7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #FFD700;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+.study-qa.hide-answer .study-a-block { display: none; }
+
+/* ══════════════════════════════════════════
+   CONFIRM MODAL
+══════════════════════════════════════════ */
+#modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+#modal-overlay.active { display: flex; }
+.modal-box {
+  background: #03088a;
+  border: 2px solid #FFD700;
+  border-radius: 10px;
+  padding: 32px 36px;
+  max-width: 400px;
+  text-align: center;
+}
+.modal-title { font-size: 1.1rem; color: #FFD700; margin-bottom: 10px; font-weight: bold; }
+.modal-body  { font-size: .9rem; color: rgba(255,255,255,.8); margin-bottom: 24px; line-height: 1.5; }
+.modal-btns  { display: flex; gap: 10px; justify-content: center; }
+.modal-confirm { background: #e74c3c; color: #fff; border: none; padding: 9px 24px; border-radius: 5px; font-family: Georgia, serif; font-size: .9rem; cursor: pointer; font-weight: bold; }
+.modal-cancel  { background: transparent; color: #FFD700; border: 2px solid #FFD700; padding: 9px 24px; border-radius: 5px; font-family: Georgia, serif; font-size: .9rem; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════  TITLE SCREEN  ═══════════════ -->
+<div id="title-screen">
+  <p class="title-eyebrow">IB History · Paper 3 · War and Change in the Middle East</p>
+  <h1 class="title-main">A2 REVIEW</h1>
+  <p class="title-sub">Iran · Saudi Arabia · Egypt</p>
+  <p class="title-date">May 8, 2026 · v4</p>
+
+  <div class="title-divider"></div>
+
+  <div class="cat-pills">
+    <span class="cat-pill">Iran &amp; Reza Shah</span>
+    <span class="cat-pill">Ibn Saud &amp; Saudi Arabia</span>
+    <span class="cat-pill">Egypt's Interwar Period</span>
+    <span class="cat-pill">Key Terms</span>
+    <span class="cat-pill">Compare &amp; Contrast</span>
+  </div>
+
+  <div class="title-btn-row">
+    <button class="btn-start" onclick="startGame()">PLAY</button>
+    <button class="btn-study" onclick="openStudyMode()">STUDY MODE</button>
+  </div>
+  <p class="title-hint">5 categories · 25 questions · 3 teams</p>
+</div>
+
+<!-- ═══════════════  BOARD  ═══════════════ -->
+<div id="board-screen">
+  <h1 class="game-title">IB HISTORY A2 REVIEW</h1>
+  <p class="game-sub">War and Change in the Middle East · Paper 3 &nbsp;·&nbsp; Iran · Saudi Arabia · Egypt &nbsp;·&nbsp; May 8, 2026 &nbsp;·&nbsp; v4</p>
+
+  <div class="control-bar">
+    <button class="ctrl-btn ctrl-reset-board"  onclick="confirmReset('board')">↺ Reset Board</button>
+    <button class="ctrl-btn ctrl-reset-scores" onclick="confirmReset('scores')">↺ Reset Scores</button>
+    <button class="ctrl-btn ctrl-reset-all"    onclick="confirmReset('all')">⚠ Reset All</button>
+    <button class="ctrl-btn ctrl-title"        onclick="goTitle()">▲ Title Screen</button>
+  </div>
+
+  <div class="scores" id="score-strip"></div>
+  <div class="board"  id="board"></div>
+
+  <!-- TEACHER DIRECTIONS -->
+  <div class="teacher-box" id="teacher-box">
+    <div class="teacher-box-header" onclick="toggleTeacherBox()">
+      <span class="teacher-box-title">Teacher Directions</span>
+      <span class="teacher-box-toggle">▼</span>
+    </div>
+    <div class="teacher-box-body">
+      <ol>
+        <li><strong>Pick teams.</strong> Divide the class into three teams of roughly equal size. Have each team choose a name or simply use Team 1, 2, 3. Designate one student per team as the "captain" who will deliver the team's final answer.</li>
+        <li><strong>Choose who goes first.</strong> Use a quick method — coin flip, rock-paper-scissors, or ask a warm-up question and award first pick to the fastest correct response.</li>
+        <li><strong>Selecting a question.</strong> The team in control picks a category and point value from the board. Click the corresponding cell to reveal the question.</li>
+        <li><strong>Answering the question.</strong> Give the team about 30 seconds to confer quietly. The captain delivers the final answer. Other teams should stay silent until a ruling is made.</li>
+        <li><strong>Reveal &amp; rule.</strong> Click <strong>Reveal Answer</strong> to display the correct response. Compare the team's answer to it and decide:
+          <ul style="margin-top:6px; padding-left: 18px;">
+            <li><strong>Correct or substantially correct →</strong> click the green <strong>+[points]</strong> button under that team.</li>
+            <li><strong>Incorrect →</strong> click the red <strong>−[points]</strong> button under that team (or leave their score unchanged if you prefer a no-penalty rule — pick one approach and stick with it).</li>
+            <li><strong>Partial credit →</strong> at your discretion, award a smaller value by clicking +/− on a different point row, or simply award full credit if the key idea is present.</li>
+          </ul>
+        </li>
+        <li><strong>Steal rule (optional).</strong> If the controlling team answers incorrectly, you may open the question to the other two teams. The first to raise a hand and answer correctly earns the points; an incorrect steal loses them the points.</li>
+        <li><strong>Return to the board.</strong> Click <strong>← Back to Board</strong>. The cell is marked used and play passes to the next team. (Use <strong>Skip</strong> if you want to leave the question open and revisit it later — it does not mark the cell used.)</li>
+        <li><strong>Rotation.</strong> Control of the board rotates: next team picks the next question. If a team answers a stolen question correctly, control passes to them.</li>
+        <li><strong>Ending the game.</strong> Play continues until all 25 cells are used, or until time runs out. Highest score wins. Use <strong>Reset Board</strong> to play again with the same teams and scores carried over, or <strong>Reset All</strong> for a fresh start.</li>
+      </ol>
+
+      <div class="teacher-box-section">
+        <div class="teacher-box-section-title">Quick Tips</div>
+        <ul style="padding-left: 18px;">
+          <li>Click a <strong>category header</strong> at any time to restore that single column.</li>
+          <li>Scores can go negative — useful for the "wrong answer = penalty" rule.</li>
+          <li>The Study Mode button on the title screen lets students review every question and answer before or after the game.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════  QUESTION  ═══════════════ -->
+<div id="question-screen">
+  <div class="q-cat"  id="q-cat"></div>
+  <div class="q-pts"  id="q-pts"></div>
+  <div class="q-text" id="q-text"></div>
+
+  <div class="q-answer" id="q-answer">
+    <div class="answer-label">Answer</div>
+    <div id="q-answer-text"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-reveal" id="btn-reveal" onclick="revealAnswer()">Reveal Answer</button>
+    <button class="btn btn-back"   onclick="goBack()">← Back to Board</button>
+    <button class="btn btn-skip"   onclick="skipQuestion()">Skip (keep open)</button>
+  </div>
+
+  <div class="score-panel" id="score-panel"></div>
+
+  <div class="teacher-reminder">
+    <strong>Teacher:</strong> Read the question aloud · give the team ~30s · click <strong>Reveal Answer</strong> to check · click <strong>+[points]</strong> for a correct answer or <strong>−[points]</strong> for an incorrect one · then <strong>Back to Board</strong> to mark the cell used and pass control to the next team.
+  </div>
+</div>
+
+<!-- ═══════════════  STUDY MODE  ═══════════════ -->
+<div id="study-screen">
+  <div class="study-header">
+    <h1 class="study-title">STUDY MODE</h1>
+    <p class="study-sub">War and Change in the Middle East · Paper 3 &nbsp;·&nbsp; All 25 Questions &amp; Answers</p>
+    <div class="study-controls">
+      <button class="study-ctrl-btn" onclick="goTitle()">← Back to Title</button>
+      <button class="study-ctrl-btn" onclick="studyExpandAll()">Expand All</button>
+      <button class="study-ctrl-btn" onclick="studyCollapseAll()">Collapse All</button>
+      <button class="study-ctrl-btn" onclick="studyToggleAnswers()" id="study-toggle-answers">Hide All Answers</button>
+    </div>
+  </div>
+  <div class="study-container" id="study-container"></div>
+</div>
+
+<!-- ═══════════════  CONFIRM MODAL  ═══════════════ -->
+<div id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirm Reset</div>
+    <div class="modal-body"  id="modal-body">Are you sure?</div>
+    <div class="modal-btns">
+      <button class="modal-confirm" id="modal-confirm-btn">Reset</button>
+      <button class="modal-cancel"  onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ─── */
+const CATEGORIES = [
+  "Iran & Reza Shah",
+  "Ibn Saud & Saudi Arabia",
+  "Egypt's Interwar Period",
+  "Key Terms",
+  "Compare & Contrast"
+];
+
+const QUESTIONS = [
+  // ── Iran & Reza Shah ──
+  [
+    {
+      q: "What did the 1928 abolition of capitulations accomplish for Iran?",
+      a: "It ended extraterritorial legal privileges for foreigners — a key marker of sovereignty recovery. Foreigners could no longer claim exemption from Iranian law and Iranian courts."
+    },
+    {
+      q: "Reza Shah's 1935 request that foreign governments call the country 'Iran' rather than 'Persia' was primarily intended to accomplish what?",
+      a: "Assert a pre-Islamic Aryan national identity, signaling cultural alignment with Germany's racial-nationalist ideology — not a mere name change, but an ideological statement."
+    },
+    {
+      q: "What was the strategic significance of the Trans-Iranian Railway built in the 1930s?",
+      a: "It linked the Caspian Sea to the Persian Gulf without crossing British- or Russian-controlled territory — a symbol of strategic independence funded entirely by Iranian resources (a tea and sugar tax), not foreign capital."
+    },
+    {
+      q: "Reza Shah's forced unveiling decree (1936) is significant because it represents what in his modernization program?",
+      a: "The most coercive social reform — police actively removed headscarves from women in public. It reveals the fundamental tension in his program: modernization imposed by force, without consent, which generated lasting resentment."
+    },
+    {
+      q: "Reza Shah's abdication in 1941 was most directly caused by what event — and what does it reveal about the ceiling of Iranian sovereignty?",
+      a: "A coordinated Anglo-Soviet invasion and ultimatum demanding he expel German advisors. He refused; Allied forces occupied Iran and forced him out. It exposed that even a strong authoritarian state could not resist foreign powers when their strategic interests demanded otherwise — the ultimate limit of his sovereignty-building project."
+    }
+  ],
+
+  // ── Ibn Saud & Saudi Arabia ──
+  [
+    {
+      q: "What was Ibn Saud's primary mechanism for establishing political authority beyond his own tribal base across the Arabian Peninsula?",
+      a: "The Wahhabi clerical alliance — which substituted religious legitimacy for tribal kinship bonds and enabled governance across rival clans that owed him no blood loyalty."
+    },
+    {
+      q: "Why were the Ikhwan crushed by Ibn Saud in 1929, and what does this decision reveal about his priorities?",
+      a: "They demanded the jihad continue into British-controlled Iraq and Transjordan, threatening to drag Saudi Arabia into a war it could not win. Ibn Saud chose state consolidation and pragmatic statecraft over religious expansion — revealing that political survival always trumped ideological purity."
+    },
+    {
+      q: "What was the historical significance of the 1902 capture of Riyadh?",
+      a: "Ibn Saud retook his ancestral capital at approximately age 22. It established military credibility before any major alliance negotiation — the founding act that made everything else possible."
+    },
+    {
+      q: "What was the dual significance of the 1933 Aramco oil concession?",
+      a: "It marked U.S. economic entry into the Arabian Peninsula and laid the foundation for oil-era transformation — while also creating long-term Saudi dependency on American capital and expertise. The seeds of both Saudi power and Saudi vulnerability were planted in the same agreement."
+    },
+    {
+      q: "Using the IB's four criteria (Scale, Duration, Impact, Relevance), which is most difficult to assign a high score to Ibn Saud's rule — and why?",
+      a: "Impact. Ibn Saud built durable political structures and unified the peninsula, but made no effort to transform the social or economic fabric of Saudi society. The state survived; the society changed little. High marks on Scale, Duration, and Relevance — but Impact is weak because the people's daily lives were largely unchanged by his rule."
+    }
+  ],
+
+  // ── Egypt's Interwar Period ──
+  [
+    {
+      q: "Egypt's 1923 Constitution most directly constrained which actor's ability to exercise power unilaterally — and how?",
+      a: "The King — who was now formally obligated to govern through an elected parliament rather than by personal decree. But King Fuad immediately tested this by suspending the constitution in 1928 when a Wafd majority threatened his authority."
+    },
+    {
+      q: "The 1936 Anglo-Egyptian Treaty is most accurately characterized as what?",
+      a: "A compromise: British forces relocated to the Suez Canal zone while British military access was preserved and Egyptian sovereignty remained nominal. Egypt gained a military partnership on paper; Britain retained the structural levers of power."
+    },
+    {
+      q: "The Wafd Party is best described as what?",
+      a: "A broad cross-class nationalist coalition that consistently won popular elections but was repeatedly prevented from governing by king and British vetoes. It had the mandate of the people and the support of no one with actual power."
+    },
+    {
+      q: "What was the 1942 'Abdin Palace incident, and why is it the most revealing event in Egypt's interwar history?",
+      a: "British tanks surrounded the royal palace and forced King Farouk to appoint a Wafd prime minister. It exposed Egyptian sovereignty as completely illusory — even after the 1936 treaty, Britain could override domestic political decisions at will. Both the king and the Wafd were instruments of British convenience."
+    },
+    {
+      q: "Egypt's 1922 'nominal independence' — what did Britain actually retain, and what does the word 'nominal' signal for IB analysis?",
+      a: "Britain ended the formal protectorate but retained the Suez Canal, military presence, and an effective economic veto. 'Nominal' is your signal that formal change masked structural continuity — the tools of IB analysis (Scale, Impact) require you to look past the label to what actually changed."
+    }
+  ],
+
+  // ── Key Terms ──
+  [
+    {
+      q: "What does the CEAL acronym stand for, and what does each letter require in a comparative paragraph?",
+      a: "Claim (your comparative thesis — which country, which criterion, what's at stake), Evidence (at least one specific piece per country discussed), Analysis (apply an IB criterion explicitly; weigh cases; address a counterargument), Link (connect to the broader question of authoritarian success or failure in the interwar Middle East)."
+    },
+    {
+      q: "What are the four IB criteria used to evaluate the historical significance of a ruler or regime?",
+      a: "Scale — how broadly did change extend? Duration — how long did it last? Impact — how deeply did it transform society, economy, or politics? Relevance — how does it connect to the broader patterns historians study?"
+    },
+    {
+      q: "What is the 'Saud-Wahhabi bargain,' and why does it explain Saudi durability compared to Egypt?",
+      a: "The alliance between the Saud family and the Wahhabi clerical establishment: political authority in exchange for religious legitimacy. It created domestically-rooted legitimacy requiring no foreign backing to sustain — unlike Egypt's monarchy, which depended on British willingness to prop it up."
+    },
+    {
+      q: "What does 'capitulations' mean in 19th–early 20th century Middle Eastern history, and why was their abolition a sovereignty marker?",
+      a: "Extraterritorial legal privileges granted to foreign nationals — they were exempt from local courts and subject only to their home country's laws. Abolishing them meant the state could enforce its law on everyone within its borders — a fundamental requirement of modern sovereignty."
+    },
+    {
+      q: "Name all three CEAL claims from Part 5 of the assessment and summarize what each argues.",
+      a: "Claim A: Reza Shah's modernization had greater historical impact on its society than Ibn Saud's state-building, even though it proved less durable. Claim B: Egypt's contested authority made it the least successful authoritarian state in the case study, regardless of which criterion is applied. Claim C: Foreign-power dependency was the defining constraint on all three interwar states, but manifested in fundamentally different forms in each case."
+    }
+  ],
+
+  // ── Compare & Contrast ──
+  [
+    {
+      q: "What is the most significant structural difference between Reza Shah's Iran and Ibn Saud's Saudi Arabia as authoritarian states?",
+      a: "Reza Shah's authority required constant coercive enforcement against resistant institutions (clergy, tribes, the Majlis). Ibn Saud's Wahhabi-tribal bargain created self-sustaining legitimacy that did not need to be imposed by force — the state and its religious foundation reinforced each other."
+    },
+    {
+      q: "Why did the Saud monarchy prove more durable than Egypt's monarchy?",
+      a: "The Saud-Wahhabi bargain created domestically-rooted legitimacy requiring no foreign backing. Egypt's monarchy depended on British willingness to prop it up — and that support came with strings. The 1942 'Abdin Palace incident proved that Farouk's 'authority' was always conditional on British approval."
+    },
+    {
+      q: "IB historians describe Egypt as the 'comparative pivot' of the three-country case study. What does this mean?",
+      a: "Egypt's three-way deadlock (king vs. Wafd vs. British) reveals what happens when neither authoritarian nor democratic consolidation succeeds. Iran and Saudi Arabia each resolved this tension — through coercion and tribal bargain respectively. Egypt shows the conditions under which both paths fail simultaneously, making it the diagnostic case for the whole unit."
+    },
+    {
+      q: "Which of the three CEAL claims is hardest to argue successfully — and why?",
+      a: "Claim B ('Egypt was least successful regardless of criterion') is hardest — it requires disproving the counterargument on every criterion, not just one. You must address Scale, Duration, Impact, and Relevance for all three states. A strong student can do it, but they have to defeat the counterargument four times rather than once."
+    },
+    {
+      q: "Compare Ibn Saud and King Farouk as individual rulers. Which had greater personal control over their country's historical outcome — and why?",
+      a: "Ibn Saud had far greater personal control. He built the state from nothing: captured Riyadh at ~22, negotiated the Aramco concession on his own terms, and crushed the Ikhwan when they threatened stability. Farouk inherited a throne already constrained by the 1923 Constitution, Wafd electoral dominance, and British veto power. The 1942 palace incident proved he could not even choose his own prime minister."
+    }
+  ]
+];
+
+const POINTS = [100, 200, 300, 400, 500];
+const TEAMS  = ["Team 1", "Team 2", "Team 3"];
+
+/* ─── STATE ─── */
+let used   = CATEGORIES.map(() => Array(POINTS.length).fill(false));
+let scores = TEAMS.map(() => 0);
+let currentCell = null;
+let pendingResetType = null;
+let answersHidden = false;
+
+/* ─── SCREEN NAVIGATION ─── */
+function startGame() {
+  hideAllScreens();
+  document.getElementById('board-screen').style.display = 'block';
+  buildScoreStrip();
+  buildBoard();
+}
+
+function goTitle() {
+  hideAllScreens();
+  document.getElementById('title-screen').style.display = 'flex';
+}
+
+function openStudyMode() {
+  hideAllScreens();
+  document.getElementById('study-screen').style.display = 'block';
+  buildStudyMode();
+}
+
+function hideAllScreens() {
+  document.getElementById('title-screen').style.display    = 'none';
+  document.getElementById('board-screen').style.display    = 'none';
+  document.getElementById('question-screen').style.display = 'none';
+  document.getElementById('study-screen').style.display    = 'none';
+}
+
+/* ─── TEACHER BOX TOGGLE ─── */
+function toggleTeacherBox() {
+  document.getElementById('teacher-box').classList.toggle('collapsed');
+}
+
+/* ─── RESET LOGIC ─── */
+function confirmReset(type) {
+  pendingResetType = type;
+  const titles  = { board: 'Reset Board', scores: 'Reset Scores', all: 'Reset Everything' };
+  const bodies  = {
+    board:  'All question tiles will be restored. Scores are kept.',
+    scores: 'All team scores will return to 0. Board state is kept.',
+    all:    'The entire board and all scores will reset to zero.'
+  };
+  document.getElementById('modal-title').textContent = titles[type];
+  document.getElementById('modal-body').textContent  = bodies[type];
+  document.getElementById('modal-overlay').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('active');
+  pendingResetType = null;
+}
+
+document.getElementById('modal-confirm-btn').addEventListener('click', () => {
+  if (pendingResetType === 'board' || pendingResetType === 'all') {
+    used = CATEGORIES.map(() => Array(POINTS.length).fill(false));
+  }
+  if (pendingResetType === 'scores' || pendingResetType === 'all') {
+    scores.fill(0);
+  }
+  closeModal();
+  buildScoreStrip();
+  buildBoard();
+});
+
+/* Reset a single category column (click category header) */
+function resetColumn(colIdx) {
+  used[colIdx] = Array(POINTS.length).fill(false);
+  buildBoard();
+}
+
+/* ─── BUILD SCORE STRIP ─── */
+function buildScoreStrip() {
+  const strip = document.getElementById('score-strip');
+  strip.innerHTML = TEAMS.map((name, i) => `
+    <div class="team" id="team-${i}">
+      <div class="team-label">${name}</div>
+      <div class="team-score" id="score-${i}">${scores[i]}</div>
+    </div>
+  `).join('');
+}
+
+/* ─── BUILD BOARD ─── */
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  CATEGORIES.forEach((cat, col) => {
+    const h = document.createElement('div');
+    const allUsed = used[col].every(Boolean);
+    h.className = 'cat-header' + (allUsed ? ' all-used' : '');
+    h.textContent = cat;
+    h.title = 'Click to restore this category';
+    h.onclick = () => {
+      if (used[col].some(Boolean)) resetColumn(col);
+    };
+    board.appendChild(h);
+  });
+
+  for (let row = 0; row < POINTS.length; row++) {
+    for (let col = 0; col < CATEGORIES.length; col++) {
+      const cell = document.createElement('div');
+      const isUsed = used[col][row];
+      cell.className = 'cell' + (isUsed ? ' used' : '');
+      cell.textContent = isUsed ? '' : '$' + POINTS[row];
+      if (!isUsed) cell.onclick = () => openQuestion(col, row);
+      board.appendChild(cell);
+    }
+  }
+}
+
+/* ─── OPEN QUESTION ─── */
+function openQuestion(col, row) {
+  currentCell = { col, row };
+  const q   = QUESTIONS[col][row];
+  const pts = POINTS[row];
+
+  document.getElementById('q-cat').textContent  = CATEGORIES[col];
+  document.getElementById('q-pts').textContent  = '$' + pts;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-answer-text').textContent = q.a;
+  document.getElementById('q-answer').style.display = 'none';
+  document.getElementById('btn-reveal').style.display = 'inline-block';
+
+  const panel = document.getElementById('score-panel');
+  panel.innerHTML = TEAMS.map((name, i) => `
+    <div class="score-group">
+      <div class="score-group-label">${name}</div>
+      <div class="score-group-score" id="qscore-${i}">${scores[i]}</div>
+      <div class="score-group-btns">
+        <button class="sbtn plus"  onclick="adjustScore(${i},  ${pts})">+${pts}</button>
+        <button class="sbtn minus" onclick="adjustScore(${i}, -${pts})">&#8722;${pts}</button>
+      </div>
+    </div>
+  `).join('');
+
+  hideAllScreens();
+  document.getElementById('question-screen').style.display = 'flex';
+}
+
+/* ─── REVEAL ─── */
+function revealAnswer() {
+  document.getElementById('q-answer').style.display   = 'block';
+  document.getElementById('btn-reveal').style.display = 'none';
+}
+
+/* ─── ADJUST SCORE ─── */
+function adjustScore(teamIdx, delta) {
+  scores[teamIdx] += delta;
+  const qel = document.getElementById('qscore-' + teamIdx);
+  if (qel) qel.textContent = scores[teamIdx];
+  const sel = document.getElementById('score-' + teamIdx);
+  if (sel) sel.textContent = scores[teamIdx];
+}
+
+/* ─── BACK TO BOARD ─── */
+function goBack() {
+  if (currentCell) {
+    used[currentCell.col][currentCell.row] = true;
+    currentCell = null;
+  }
+  hideAllScreens();
+  document.getElementById('board-screen').style.display = 'block';
+  buildScoreStrip();
+  buildBoard();
+}
+
+/* ─── SKIP ─── */
+function skipQuestion() {
+  currentCell = null;
+  hideAllScreens();
+  document.getElementById('board-screen').style.display = 'block';
+  buildScoreStrip();
+  buildBoard();
+}
+
+/* ─── STUDY MODE ─── */
+function buildStudyMode() {
+  const container = document.getElementById('study-container');
+  container.innerHTML = CATEGORIES.map((cat, col) => `
+    <div class="study-category" id="study-cat-${col}">
+      <div class="study-category-header" onclick="toggleStudyCategory(${col})">
+        <span>${cat}</span>
+        <span class="study-category-toggle">▼</span>
+      </div>
+      <div class="study-category-body">
+        ${QUESTIONS[col].map((qa, row) => `
+          <div class="study-qa">
+            <div class="study-q-line">
+              <span class="study-pts-tag">$${POINTS[row]}</span>
+              <span class="study-q-text">${escapeHtml(qa.q)}</span>
+            </div>
+            <div class="study-a-block">
+              <div class="study-a-label">Answer</div>
+              ${escapeHtml(qa.a)}
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  applyAnswerVisibility();
+}
+
+function toggleStudyCategory(col) {
+  document.getElementById('study-cat-' + col).classList.toggle('collapsed');
+}
+
+function studyExpandAll() {
+  document.querySelectorAll('.study-category').forEach(el => el.classList.remove('collapsed'));
+}
+
+function studyCollapseAll() {
+  document.querySelectorAll('.study-category').forEach(el => el.classList.add('collapsed'));
+}
+
+function studyToggleAnswers() {
+  answersHidden = !answersHidden;
+  applyAnswerVisibility();
+  document.getElementById('study-toggle-answers').textContent =
+    answersHidden ? 'Show All Answers' : 'Hide All Answers';
+}
+
+function applyAnswerVisibility() {
+  document.querySelectorAll('.study-qa').forEach(el => {
+    if (answersHidden) el.classList.add('hide-answer');
+    else el.classList.remove('hide-answer');
+  });
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>
+</body>
+</html>
