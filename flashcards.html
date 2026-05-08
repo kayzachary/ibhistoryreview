@@ -1,0 +1,1542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IB History · Unit 2 Review · Iran, Saudi Arabia &amp; Egypt</title>
+<style>
+  :root {
+    --navy:        #0f2a47;
+    --navy-deep:   #0a1f36;
+    --navy-soft:   #1c3d63;
+    --red:         #c0392b;
+    --red-soft:    #e74c3c;
+    --gold:        #b8893a;
+    --bg:          #f4f1ea;
+    --bg-card:     #ffffff;
+    --ink:         #1a1a1a;
+    --ink-soft:    #4a4a4a;
+    --line:        #d8d2c4;
+    --good:        #2e7d4f;
+    --good-soft:   #d4ead9;
+    --bad:         #b3261e;
+    --bad-soft:    #f7d9d6;
+    --warn:        #b88416;
+    --warn-soft:   #f6e7c4;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Source Serif Pro", "Georgia", "Times New Roman", serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  body {
+    display: flex; flex-direction: column;
+    min-height: 100vh;
+  }
+  header.banner {
+    background: linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color: #fff;
+    padding: 28px 40px 22px;
+    border-bottom: 4px solid var(--red);
+  }
+  header.banner .eyebrow {
+    font-family: "Helvetica Neue", "Arial", sans-serif;
+    font-size: 13px; letter-spacing: 2.2px;
+    text-transform: uppercase;
+    color: var(--red-soft);
+    font-weight: 700;
+  }
+  header.banner h1 {
+    margin: 6px 0 2px;
+    font-size: 38px;
+    letter-spacing: 0.3px;
+  }
+  header.banner .sub {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    color: #c9d6e6;
+  }
+  header.banner .meta {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    color: #9fb0c4;
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  /* setup screen */
+  .setup {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 36px 24px 60px;
+  }
+  .setup h2 {
+    font-size: 22px; color: var(--navy);
+    margin: 0 0 6px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--red);
+    padding-bottom: 4px;
+  }
+  .setup p.lead {
+    font-size: 16px; color: var(--ink-soft);
+    max-width: 720px; text-align: center; line-height: 1.55;
+  }
+  .grid {
+    display: grid; gap: 18px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    max-width: 1100px; width: 100%;
+    margin: 14px 0 28px;
+  }
+  .pick {
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-left: 6px solid var(--navy);
+    padding: 18px 18px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    text-align: left;
+    font-family: inherit;
+    color: inherit;
+  }
+  .pick:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(15,42,71,.14);
+    border-left-color: var(--red);
+  }
+  .pick.active {
+    border-left-color: var(--red);
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(15,42,71,.18);
+  }
+  .pick .tag {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--red); font-weight: 700;
+  }
+  .pick h3 {
+    margin: 4px 0 6px; font-size: 19px; color: var(--navy);
+  }
+  .pick p {
+    margin: 0; font-size: 13.5px; color: var(--ink-soft);
+    line-height: 1.45;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .pick .count {
+    margin-top: 10px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px; color: var(--ink-soft);
+    letter-spacing: 0.5px;
+  }
+  .row {
+    display: flex; flex-wrap: wrap; gap: 12px; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .start-btn {
+    background: var(--red);
+    color: #fff; border: none;
+    padding: 14px 36px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background .12s ease;
+  }
+  .start-btn:hover { background: #a93022; }
+  .start-btn:disabled { background: #b9a99a; cursor: not-allowed; }
+
+  /* play screen */
+  .play {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    padding: 18px 28px 40px;
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .toolbar {
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+    padding: 10px 0 14px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 22px;
+  }
+  .crumb {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .crumb b { color: var(--navy); }
+  .crumb .sep { color: var(--line); margin: 0 8px; }
+  .progress {
+    display: flex; gap: 16px; align-items: center;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .pill {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+  }
+  .pill b { color: var(--navy); margin-left: 4px; font-weight: 700; }
+  .pill.good { border-color: #b3d8c2; background: var(--good-soft); color: var(--good); }
+  .pill.warn { border-color: #e6cf94; background: var(--warn-soft); color: var(--warn); }
+  .pill.bad  { border-color: #e8b9b6; background: var(--bad-soft); color: var(--bad); }
+  .quit-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 6px 12px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .quit-btn:hover { color: var(--red); border-color: var(--red); }
+
+  /* FLASHCARD */
+  .stage {
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+  }
+  .card-wrap {
+    perspective: 1600px;
+    width: 100%;
+    max-width: 1080px;
+    height: 460px;
+  }
+  .card {
+    position: relative;
+    width: 100%; height: 100%;
+    transform-style: preserve-3d;
+    transition: transform .55s cubic-bezier(.4,.05,.2,1);
+    cursor: pointer;
+  }
+  .card.flipped { transform: rotateY(180deg); }
+  .face {
+    position: absolute; inset: 0;
+    backface-visibility: hidden;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--navy);
+    border-radius: 6px;
+    box-shadow: 0 14px 32px rgba(15,42,71,.12);
+    padding: 38px 56px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .face.back { transform: rotateY(180deg); border-top-color: var(--red); }
+  .face .face-tag {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--red); font-weight: 700;
+  }
+  .face .face-tag .level {
+    color: var(--ink-soft); margin-left: 10px;
+    border-left: 1px solid var(--line); padding-left: 10px;
+  }
+  .face .term {
+    font-size: 44px; line-height: 1.18;
+    color: var(--navy);
+    margin: auto 0;
+    font-weight: 700;
+    text-align: center;
+  }
+  .face .small-prompt {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px; color: var(--ink-soft);
+    text-align: center;
+    letter-spacing: 0.5px;
+    margin-top: auto;
+  }
+  .face .definition {
+    font-size: 22px; line-height: 1.5;
+    color: var(--ink);
+    margin-top: 18px;
+  }
+  .face .hook-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gold); font-weight: 700;
+    margin-top: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .face .hook {
+    font-size: 19px; line-height: 1.45;
+    color: var(--navy-soft);
+    font-style: italic;
+    margin-top: 4px;
+  }
+
+  .rate-row {
+    display: flex; gap: 10px;
+    width: 100%; max-width: 1080px;
+    justify-content: space-between;
+  }
+  .rate-row.hidden { visibility: hidden; }
+  .rate {
+    flex: 1;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    padding: 14px 18px 12px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+    border-top: 4px solid;
+    transition: transform .1s ease, background .12s ease;
+  }
+  .rate:hover { transform: translateY(-2px); }
+  .rate small {
+    display: block;
+    font-size: 10px;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    font-weight: 400;
+  }
+  .rate.again  { border-top-color: var(--bad); }
+  .rate.hard   { border-top-color: var(--warn); }
+  .rate.good   { border-top-color: var(--good); }
+  .rate.easy   { border-top-color: var(--navy); }
+  .rate.again:hover  { background: var(--bad-soft); }
+  .rate.hard:hover   { background: var(--warn-soft); }
+  .rate.good:hover   { background: var(--good-soft); }
+  .rate.easy:hover   { background: #d6e0ec; }
+
+  .flip-prompt {
+    background: var(--navy);
+    color: #fff;
+    border: none;
+    padding: 14px 40px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .flip-prompt:hover { background: var(--navy-soft); }
+
+  /* MC */
+  .mc-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--navy);
+    border-radius: 6px;
+    box-shadow: 0 12px 28px rgba(15,42,71,.10);
+    padding: 32px 44px 28px;
+    width: 100%; max-width: 1080px;
+  }
+  .mc-stem {
+    font-size: 22px; line-height: 1.5; color: var(--navy);
+    margin-bottom: 22px;
+  }
+  .mc-stem .ltag {
+    color: var(--red); font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px; letter-spacing: 1.5px; margin-right: 8px;
+    font-weight: 700;
+  }
+  .mc-opts { display: flex; flex-direction: column; gap: 10px; }
+  .mc-opt {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 18px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px; line-height: 1.45;
+    transition: background .1s ease, border-color .1s ease;
+  }
+  .mc-opt:hover { background: #f6f1e6; border-color: var(--gold); }
+  .mc-opt.selected { background: #eaf0f8; border-color: var(--navy); }
+  .mc-opt.correct { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+  .mc-opt.wrong   { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+  .mc-opt .ltr {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--navy);
+    border: 1.5px solid var(--navy);
+    border-radius: 50%;
+    width: 28px; height: 28px; min-width: 28px;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .mc-opt.correct .ltr { color: var(--good); border-color: var(--good); }
+  .mc-opt.wrong .ltr   { color: var(--bad);  border-color: var(--bad); }
+  .mc-feedback {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--navy);
+    background: #f4ede0;
+    font-size: 15px; line-height: 1.5;
+    color: var(--ink);
+    display: none;
+  }
+  .mc-feedback.show { display: block; }
+  .mc-feedback b { color: var(--navy); }
+
+  /* MATCHING */
+  .match-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    width: 100%; max-width: 1180px;
+  }
+  .match-col {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--navy);
+    border-radius: 6px;
+    padding: 16px 18px;
+  }
+  .match-col h3 {
+    margin: 0 0 10px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--red);
+  }
+  .match-item {
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 15px; line-height: 1.4;
+    background: #fff;
+    transition: background .1s ease, border-color .1s ease;
+  }
+  .match-item:hover { background: #f6f1e6; border-color: var(--gold); }
+  .match-item.selected { background: #eaf0f8; border-color: var(--navy); }
+  .match-item.matched { background: var(--good-soft); border-color: var(--good); cursor: default; opacity: 0.78; }
+  .match-item.shake   { animation: shake .35s; border-color: var(--bad); background: var(--bad-soft); }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+  .match-item .ltr-badge {
+    display: inline-block; min-width: 22px;
+    margin-right: 8px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; font-weight: 700;
+    color: var(--red);
+  }
+
+  /* SOURCE ID */
+  .src-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--navy);
+    border-radius: 6px;
+    padding: 28px 36px;
+    width: 100%; max-width: 1080px;
+    box-shadow: 0 10px 24px rgba(15,42,71,.10);
+  }
+  .src-tag {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--red); font-weight: 700;
+  }
+  .src-quote {
+    font-size: 18px; line-height: 1.6;
+    color: var(--ink);
+    border-left: 4px solid var(--gold);
+    padding: 6px 0 6px 18px;
+    margin: 14px 0 8px;
+    font-style: italic;
+  }
+  .src-attrib {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+  .src-prompt {
+    font-size: 17px; line-height: 1.5; color: var(--navy);
+    margin-bottom: 14px;
+  }
+  .src-answer {
+    width: 100%;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 12px;
+    font-family: inherit; font-size: 15px;
+    min-height: 80px;
+    background: #fffaf0;
+    resize: vertical;
+  }
+  .src-reveal-btn {
+    background: var(--navy); color: #fff;
+    border: none;
+    padding: 10px 22px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: 1.8px; text-transform: uppercase;
+    font-weight: 700;
+    cursor: pointer; border-radius: 2px;
+    margin-top: 12px;
+  }
+  .src-reveal-btn:hover { background: var(--navy-soft); }
+  .src-model {
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-left: 4px solid var(--good);
+    background: var(--good-soft);
+    font-size: 15px; line-height: 1.55;
+    display: none;
+  }
+  .src-model.show { display: block; }
+  .src-model b { color: var(--good); }
+
+  /* FINISH */
+  .done-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-top: 6px solid var(--good);
+    border-radius: 6px;
+    padding: 36px 44px;
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .done-card h2 {
+    color: var(--navy);
+    margin: 0 0 8px;
+    font-size: 28px;
+  }
+  .done-card .stat-row {
+    display: flex; justify-content: center; gap: 28px;
+    margin: 22px 0 8px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .done-card .stat {
+    text-align: center;
+  }
+  .done-card .stat .n {
+    font-size: 36px; color: var(--navy); font-weight: 700;
+  }
+  .done-card .stat .l {
+    font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  /* footer */
+  footer.foot {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px; letter-spacing: 1px;
+    color: var(--ink-soft);
+    text-align: center;
+    padding: 14px;
+    border-top: 1px solid var(--line);
+    background: #ece6d6;
+  }
+  footer.foot b { color: var(--navy); }
+
+  /* keyboard hints */
+  .keys {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+  .keys kbd {
+    background: #fff; border: 1px solid var(--line);
+    padding: 2px 7px; border-radius: 3px;
+    font-family: "Source Code Pro", monospace;
+    font-size: 11px; color: var(--navy);
+    margin: 0 2px;
+  }
+
+  @media (max-width: 720px) {
+    header.banner { padding: 22px 20px 18px; }
+    header.banner h1 { font-size: 26px; }
+    .face { padding: 24px 22px; }
+    .face .term { font-size: 30px; }
+    .face .definition { font-size: 17px; }
+    .face .hook { font-size: 16px; }
+    .card-wrap { height: 520px; }
+    .rate-row { flex-direction: column; }
+    .match-wrap { grid-template-columns: 1fr; }
+    .mc-card, .src-card { padding: 22px 20px; }
+    .mc-stem { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="banner">
+  <div class="eyebrow">IB History · Unit 2 · Exam Review</div>
+  <h1>Iran, Saudi Arabia &amp; Egypt</h1>
+  <div class="sub">Interwar State-Building · L7 / L8 / L9 · Prep for Friday, May 8 Assessment</div>
+  <div class="meta">SECTIONS 2B &amp; 4B · Reza Shah · Ibn Saud · Wafd / Fuad / Farouk</div>
+</header>
+
+<!-- ==================== SETUP ==================== -->
+<section class="setup" id="setup">
+  <h2>Choose Your Deck</h2>
+  <p class="lead">
+    Drill the exact content on the assessment. Pick a deck and a mode &mdash;
+    flashcards use spaced repetition (cards you miss come back; cards you know retire).
+    Aim for 30+ minutes, mix modes, finish weak.
+  </p>
+
+  <h2 style="margin-top:8px;">1 · Deck</h2>
+  <div class="grid" id="deckGrid"></div>
+
+  <h2>2 · Mode</h2>
+  <div class="grid" id="modeGrid"></div>
+
+  <div class="row" style="margin-top: 8px;">
+    <button class="start-btn" id="startBtn" disabled>Begin Review</button>
+  </div>
+  <div class="keys">
+    Keyboard: <kbd>Space</kbd> flip · <kbd>1</kbd>–<kbd>4</kbd> rate · <kbd>Esc</kbd> quit
+  </div>
+</section>
+
+<!-- ==================== PLAY ==================== -->
+<section class="play" id="play">
+  <div class="toolbar">
+    <div class="crumb" id="crumb"></div>
+    <div class="progress" id="progress"></div>
+    <button class="quit-btn" id="quitBtn">End Session</button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+</section>
+
+<footer class="foot">
+  IB History · Unit 2 Assessment (A2) · L7 / L8 / L9 · <b>STUDENT PREP COPY</b> · Friday, May 8, 2026
+</footer>
+
+<script>
+/* =====================================================================
+   CONTENT
+   ===================================================================== */
+
+/* ---------- FLASHCARDS ---------- */
+const CARDS = {
+  iran: [
+    { term: "1921 Coup", def: "Reza Khan and Sayyid Zia seized power, ending the impotent Qajar government and beginning Reza's rise from Cossack commander to Shah.", hook: "Khan before Shah — the soldier had to crush the old order before he could crown himself." },
+    { term: "1925 Pahlavi Coronation", def: "Reza Khan deposed the last Qajar and crowned himself Shah, founding the Pahlavi dynasty that would rule until 1979.", hook: "From cossack to king in four years — power preceded legitimacy." },
+    { term: "1928 Abolition of Capitulations", def: "Ended extraterritorial legal privileges for foreigners — they could finally be tried under Iranian law. A key marker of sovereignty recovery.", hook: "Capitulations capitulated. Foreigners no longer above Iranian courts." },
+    { term: "1935 Renaming of Persia → Iran", def: "Asserted a pre-Islamic Aryan national identity; signaled cultural alignment with Germany's racial-nationalism and a break from Arab-Islamic and Qajar-Ottoman framing.", hook: "Iran = land of Aryans. Reza chose Cyrus over the caliphs." },
+    { term: "1936 Forced Unveiling Decree (Kashf-e Hijab)", def: "State-enforced secular dress code; police physically removed women's headscarves. The most coercive of Reza's social reforms — alienated the Shia clergy permanently.", hook: "He tried to legislate identity — and earned the clergy's enduring hostility." },
+    { term: "Trans-Iranian Railway (1930s)", def: "Linked the Caspian Sea to the Persian Gulf without crossing British- or Russian-controlled territory. Strategic-independence infrastructure.", hook: "The iron spine of sovereignty — an Iranian route through Iranian land." },
+    { term: "Majlis under Reza Shah", def: "The parliament (which predated 1925) was preserved on paper but stripped of real power; Reza ruled through it, not by it.", hook: "Body kept, voice silenced — the form of constitutionalism without the substance." },
+    { term: "1941 Anglo-Soviet Invasion", def: "Britain and the USSR invaded in August 1941 and ultimatumed Reza to expel German technical advisors. He refused → forced abdication, replaced by his son Mohammad Reza.", hook: "WWII squeezed Iran from north and south. Sovereignty cracked the moment great powers needed the railway." },
+    { term: "Capitulations Regime", def: "Pre-1928 system in which foreign nationals were tried under their own laws on Iranian soil — the visible ceiling on Iranian sovereignty.", hook: "Foreign privilege as the floor below which Iranian law could not reach." },
+    { term: "1919 Anglo-Persian Agreement (failed)", def: "British attempt at near-protectorate status, rejected by Majlis nationalists. The humiliation Reza Shah's nationalism was built to erase.", hook: "The deal Iran refused — and the wound that fueled Reza's rise." },
+    { term: "Coercive Secularization", def: "Top-down modernization without a domestic legitimacy base — required constant enforcement against the clergy, bazaar, and rural society.", hook: "Authority by force, not faith. The reforms outran the consent." },
+    { term: "Pahlavi Nationalism", def: "Pre-Islamic Persian glory, anti-Arab, anti-clergy, pro-state-led modernization, oriented westward (and increasingly toward Germany).", hook: "Cyrus, not Caliphs. The Achaemenids became Reza's political ancestors." }
+  ],
+
+  saudi: [
+    { term: "1902 Capture of Riyadh", def: "Ibn Saud, ~22 years old, retook his ancestral capital with a small raiding party — military credibility established before any clerical alliance.", hook: "A 40-man night raid that became the foundation of a kingdom." },
+    { term: "Wahhabi Clerical Alliance", def: "Religious legitimacy substituting for tribal kinship — Ibn Saud could govern across rival clans that owed him no blood loyalty.", hook: "Faith glued the tribes that blood could not bind." },
+    { term: "1925 Conquest of Hejaz", def: "Custodianship of Mecca and Medina — Islamic authority no foreign power could grant or revoke. Displaced the Hashemites as guardians of the holy cities.", hook: "Hold the Haramayn, hold Islam's center of gravity." },
+    { term: "1927 Treaty of Jeddah", def: "British formal recognition of an independent Saudi state — international legitimacy added to military and religious legitimacy.", hook: "Britain blesses the new kingdom — Riyadh's third pillar locks in." },
+    { term: "1929 Ikhwan Suppression", def: "Ibn Saud crushed his own religious shock troops when they demanded jihad continue into British Iraq and Transjordan, threatening to drag the new state into a war it could not win.", hook: "He turned his sword on the men who had sharpened it. Pragmatism over zealotry." },
+    { term: "1932 Kingdom of Saudi Arabia Proclaimed", def: "Formal unification of Hejaz, Najd, and other territories under the Saud name — the kingdom gets its modern label.", hook: "The map gets a new name — and a family puts its surname on a country." },
+    { term: "1933 Aramco Concession", def: "U.S. economic entry into the peninsula; foundation of the oil-era transformation but the start of long-term external dependency.", hook: "Black gold, foreign drill. The deal that bought Saudi Arabia its 20th century." },
+    { term: "Pilgrimage (Hajj) Revenue", def: "Pre-oil economic backbone — Hejaz railway tolls and pilgrim spending gave Ibn Saud both income and the visible status of protector of the Hajj.", hook: "Pilgrims paid the bills before petroleum did." },
+    { term: "Saud-Wahhabi Bargain", def: "A domestically-rooted legitimacy formula requiring no foreign backing to sustain — durable precisely because it didn't need British or American crutches.", hook: "Crown plus pulpit, no foreign crutch. Self-sustaining authority." },
+    { term: "Tribal vs Religious Legitimacy", def: "Ibn Saud could not rule by blood alone — rivals had blood too. Religion was the equalizer that let him claim authority over clans owing him no kinship.", hook: "When kinship couldn't unite, creed could." },
+    { term: "Hashemite Rivalry", def: "Ibn Saud's main rival dynasty — pre-1925 custodians of Hejaz. Britain consoled them with thrones in Iraq and Transjordan after losing Arabia.", hook: "Saud won Arabia. The Hashemites won the consolation prizes." },
+    { term: "State-building Without Bureaucracy", def: "British FO assessment (c.1928): Ibn Saud governs through persons, not institutions; through loyalty, not law. The question was whether what he built could survive him.", hook: "A kingdom built on people, not paperwork. (Spoiler: it did survive him.)" }
+  ],
+
+  egypt: [
+    { term: "1922 Nominal Independence", def: "Britain ended the formal protectorate but kept four reserved points: Suez, military, communications, and protection of foreign interests. Sovereignty in name only.", hook: "Independence with an asterisk. The flag changed; the leverage didn't." },
+    { term: "1923 Constitution", def: "Established a constitutional monarchy with elected parliament — formally obligating the king to govern through parliament rather than personal decree, even where the dynasty held a majority.", hook: "King on paper, not king on throne. Constitutionalism the king never accepted." },
+    { term: "Wafd Party", def: "Broad cross-class nationalist coalition that consistently won every free election but was repeatedly prevented from governing by king dissolutions and British vetoes.", hook: "Always the winner, never the ruler." },
+    { term: "1923 Constitution Suspended (1928)", def: "King Fuad dissolved parliament when a Wafd majority threatened him. The constitution's first major test — failed within five years.", hook: "First test, first crash. The 1923 framework never recovered its credibility." },
+    { term: "1936 Anglo-Egyptian Treaty", def: "Compromise relocating British forces to the Suez Canal Zone while preserving British military access and Egyptian nominal sovereignty over the rest of the country. Conditional sovereignty.", hook: "British leave Cairo, keep the Canal. A military partnership Egypt never asked for." },
+    { term: "1942 'Abdin Palace Incident", def: "British tanks surrounded Farouk's palace and forced him to appoint a Wafd PM. Even in WWII, Egyptian sovereignty was illusory.", hook: "Tanks at the palace gate — independence theater, exposed." },
+    { term: "King Fuad", def: "First post-protectorate monarch. Dissolved Wafd-majority parliaments, suspended the constitution (1928), and preferred personal rule to constitutional process.", hook: "Crown over constitution — the king who refused to lose." },
+    { term: "King Farouk", def: "Succeeded Fuad in 1936. Reign defined by the 1942 'Abdin humiliation, palace corruption, and eventual overthrow in 1952 by Nasser's Free Officers.", hook: "The king who survived the war but lost the country." },
+    { term: "Three-Way Deadlock", def: "King vs. Wafd vs. British residency. Each could block the other two; none could rule alone. The structural reason Egypt consolidated neither democracy nor authoritarianism.", hook: "Three players, three vetoes, zero governance." },
+    { term: "Egypt as Comparative Pivot", def: "Failed authoritarianism (Fuad/Farouk too constrained) AND failed democracy (Wafd never allowed to govern). Demonstrates that Iran's and Saudi Arabia's outcomes were not inevitable.", hook: "The control case. Egypt's deadlock proves Reza's coercion and Ibn Saud's bargain were choices, not destiny." },
+    { term: "Capitulations in Egypt", def: "Foreign legal privileges that constrained Egyptian courts; phased out beginning with the 1937 Montreux Convention but lingered until 1949.", hook: "Same disease as Iran's capitulations — different country, slower cure." },
+    { term: "Suez Canal Company", def: "Foreign-controlled, privately-owned waterway. Both the symbol and the substance of compromised Egyptian sovereignty under the 1936 treaty.", hook: "Egypt's canal, foreigners' tollbooth — until Nasser nationalized it in 1956." }
+  ],
+
+  comparative: [
+    { term: "IB Criterion: Scale", def: "How widely did effects spread? Saudi: gradual peninsular unification. Iran: nationwide reforms across all provinces. Egypt: largely confined to political class in Cairo and Alexandria.", hook: "Scale = breadth. Did the reform reach a peasant in the countryside, or just the parliament?" },
+    { term: "IB Criterion: Duration", def: "How long did effects last? Saudi: enduring (state still exists). Iran (Pahlavi): until 1979. Egypt (1923 constitutional order): broken repeatedly, dead by 1952.", hook: "Duration = longevity. The Saud bargain outlasted both the Pahlavis and the Egyptian monarchy." },
+    { term: "IB Criterion: Impact", def: "How deep were the changes? Saudi: religious-tribal restructuring without social transformation. Iran: forced social transformation (dress, language, law). Egypt: surface political churn, deep structures untouched.", hook: "Impact = depth. Reza changed how Iranians dressed; Ibn Saud changed who was loyal to whom." },
+    { term: "IB Criterion: Relevance", def: "How significant in regional/global context? Saudi: oil + Islam = global. Iran: model and cautionary tale for forced modernization. Egypt: comparative pivot showing alternate paths.", hook: "Relevance = significance beyond borders. Did anyone outside the country care?" },
+    { term: "Saud Monarchy vs Egypt Monarchy: Why Durable?", def: "The Saud-Wahhabi bargain created domestically-rooted legitimacy requiring no foreign backing, while Egypt's authority depended on continued British willingness to prop it up.", hook: "Saud built legitimacy at home. Egypt rented it from London." },
+    { term: "Reza Shah vs Ibn Saud: Key Structural Difference", def: "Reza Shah's authority required constant coercive enforcement against resistant institutions; Ibn Saud's Wahhabi-tribal bargain created self-sustaining legitimacy that did not need imposing.", hook: "Reza had to push every day. Ibn Saud built a system that ran itself." },
+    { term: "Foreign-Power Dependency (All Three)", def: "All three states constrained by foreign powers but in fundamentally different forms — Iran (Britain/USSR strategic + capitulations), Saudi (US oil), Egypt (Britain comprehensive: military, economic, political).", hook: "Same disease, three different doses. Egypt was bedridden; Iran walked with a limp; Saudi just had a prescription." },
+    { term: "Why Ibn Saud's Hardest IB Score = Impact", def: "He built durable political and religious structures but made no serious effort to transform the underlying social, economic, or educational fabric of Saudi society. Scale, duration, and relevance score easily; impact does not.", hook: "He unified the peninsula without modernizing it. Big map, shallow change." },
+    { term: "Why 1923 Egyptian Constitution Failed", def: "Three-way deadlock structural: every legitimate political force could veto the others. The constitution couldn't survive a king who wouldn't accept losing elections.", hook: "A constitution only works if losers accept losing." },
+    { term: "Reza's Coercive Modernization vs. Ibn Saud's Conservative Consolidation", def: "Reza pushed change against society; Ibn Saud built power within society's existing religious-tribal structure. Both 'modernized' the state — only one tried to modernize the people.", hook: "Reza fought his society. Ibn Saud co-opted his." }
+  ]
+};
+
+/* ---------- MULTIPLE CHOICE (from exam + extension) ---------- */
+const MC = {
+  iran: [
+    { stem: "Reza Shah's 1935 request that foreign governments call the country 'Iran' rather than 'Persia' was primarily intended to:",
+      level: "L8",
+      opts: [
+        "Comply with a League of Nations registry requirement that all member states formally use one standardized national name in international diplomatic correspondence",
+        "Distance the country from its Qajar-Ottoman administrative identity and signal full post-WWI sovereignty after the abolition of the capitulations regime",
+        "Assert a pre-Islamic Aryan national identity, signaling cultural alignment with Germany's racial-nationalist ideology and a break from Arab-Islamic framing",
+        "Consolidate the Pahlavi dynasty's symbolic break from the Qajar legacy of capitulations, foreign concessions, and the failed 1919 Anglo-Persian Agreement"
+      ],
+      ans: 2,
+      explain: "C. The renaming explicitly invoked Aryan identity and aligned culturally with 1930s Germany — a break from Arab-Islamic framing. (Matching set: 1935 renaming → Aryan identity / Germany alignment.)" },
+    { stem: "Reza Shah's abdication in 1941 was most directly caused by:",
+      level: "L8",
+      opts: [
+        "A constitutional crisis in which the Majlis, asserting itself for the first time since 1925, formally withdrew its confidence from his government over economic policy",
+        "A coordinated Anglo-Soviet invasion in August 1941 and ultimatum demanding he expel German technical advisors from Iran's railways and oil fields, which he refused",
+        "A coup by nationalist military officers who believed his forced secularization had alienated the Shia clergy and destabilized the rural countryside beyond repair",
+        "A popular general strike by industrial workers and Shia clerics who united against his modernization program and the wartime bread shortages of 1940 and 1941"
+      ],
+      ans: 1,
+      explain: "B. Britain and the USSR invaded in August 1941, demanded expulsion of German advisors; Reza refused and was forced out, replaced by his son." },
+    { stem: "Which of the following best captures why the 1928 abolition of capitulations mattered for Iranian sovereignty?",
+      level: "L8",
+      opts: [
+        "It gave Iran the right to nationalize Anglo-Persian Oil Company assets",
+        "It ended foreign extraterritorial legal privileges, exposing the prior ceiling on Iranian state authority",
+        "It created the Trans-Iranian Railway funding mechanism",
+        "It dissolved the Majlis and concentrated legal authority in the Shah"
+      ],
+      ans: 1,
+      explain: "B. Capitulations had let foreign nationals escape Iranian courts entirely. Abolishing them removed the most visible legal cap on sovereignty." },
+    { stem: "The Trans-Iranian Railway's strategic significance lay in:",
+      level: "L8",
+      opts: [
+        "Providing the first rail link between Iran and British India",
+        "Connecting Caspian to Persian Gulf without crossing British- or Russian-controlled territory",
+        "Enabling rapid Soviet troop movement that later facilitated the 1941 invasion",
+        "Funding the kingdom through pilgrimage tolls similar to the Hejaz line"
+      ],
+      ans: 1,
+      explain: "B. The route was deliberately chosen so it ran entirely through Iranian territory — strategic-independence infrastructure." }
+  ],
+
+  saudi: [
+    { stem: "What was Ibn Saud's primary mechanism for establishing political authority beyond his own tribal base across the Arabian Peninsula?",
+      level: "L9",
+      opts: [
+        "Control of the Hejaz railway and the pilgrimage routes through it, which gave him both economic leverage over regional trade and visible status as protector of the Hajj",
+        "The Wahhabi clerical alliance, which substituted religious legitimacy for tribal kinship bonds and enabled governance across rival clans that owed him no blood loyalty",
+        "British diplomatic recognition through the 1927 Treaty of Jeddah, which gave the kingdom recognized borders against Hashemite claims and international standing",
+        "Oil revenues from early Aramco concessions, which funded a professional standing army that operated outside tribal levies and was personally loyal to him"
+      ],
+      ans: 1,
+      explain: "B. The Wahhabi alliance let Ibn Saud claim authority over clans that owed him no kinship — religion stood in for blood. Hajj revenue, treaty recognition, and oil came later (and oil only mattered post-WWII)." },
+    { stem: "The Ikhwan were crushed by Ibn Saud in 1929 primarily because they:",
+      level: "L9",
+      opts: [
+        "Refused to participate in the 1924–25 Hejaz campaign, undermining Ibn Saud's conquest of Mecca and Medina at the most critical moment of his consolidation",
+        "Demanded that the jihad continue into British-controlled Iraq and Transjordan, threatening to drag the new Saudi state into a regional war it could not win",
+        "Rejected the early Aramco oil concessions on religious grounds and called for boycotts of the foreign engineers Ibn Saud needed to fund his expanding kingdom",
+        "Allied with Hashemite tribal leaders displaced from the Hejaz, creating a rival armed power center inside Arabia that threatened Ibn Saud's eastern frontier"
+      ],
+      ans: 1,
+      explain: "B. The Ikhwan wanted to push the jihad into British-protected Iraq and Transjordan; Ibn Saud crushed his own shock troops to keep the British relationship intact." },
+    { stem: "Which most accurately explains why the Saud monarchy proved more durable than Egypt's?",
+      level: "L9",
+      opts: [
+        "Oil revenues gave Ibn Saud the resources to buy tribal loyalty and fund a modern standing army that Egypt's monarchy under Fuad and Farouk simply could not afford",
+        "Britain actively protected Saudi Arabia as a strategic buffer against Hashemite or Ottoman revival, providing a security guarantee Egypt's monarchy was never offered",
+        "Saudi Arabia faced no organized political opposition because Bedouin tribal society had no parliamentary tradition comparable to Egypt's Wafd-led mass mobilization",
+        "The Saud-Wahhabi bargain created domestically-rooted legitimacy requiring no foreign backing to sustain, while Egypt's authority depended on continued British willingness to prop it up"
+      ],
+      ans: 3,
+      explain: "D. The decisive variable is legitimacy source: Saud's rested at home (creed + crown); Egypt's rested in London. Oil mattered later; the bargain mattered first." },
+    { stem: "Using the IB's four criteria (Scale, Duration, Impact, Relevance), which is most difficult to assign a high score to Ibn Saud's rule — and why?",
+      level: "L9",
+      opts: [
+        "Duration — the Saud monarchy proved fragile and was replaced within two decades by a British-backed Hashemite successor regime that ruled most of the Arabian peninsula",
+        "Relevance — Saudi Arabia's religious conservatism and geographic isolation kept it peripheral to broader regional politics until the postwar oil era of the 1950s",
+        "Scale — Ibn Saud's effective authority in the early years covered only the Nejd heartland and full peninsular unification took decades of fragile expansion against rivals",
+        "Impact — Ibn Saud built durable political and religious structures but made no serious effort to transform the underlying social, economic, or educational fabric of Saudi society"
+      ],
+      ans: 3,
+      explain: "D. He unified and stabilized the peninsula but didn't drive deep social transformation. Scale, duration, and relevance all score easily; impact is the weak axis." },
+    { stem: "The 1933 Aramco concession is best understood as:",
+      level: "L9",
+      opts: [
+        "The financial foundation that paid for Ibn Saud's 1925 conquest of the Hejaz",
+        "U.S. economic entry into the peninsula — foundation for oil-era transformation but seed of long-term external dependency",
+        "A British-brokered agreement that confirmed the 1927 Treaty of Jeddah",
+        "The mechanism that funded the suppression of the Ikhwan revolt"
+      ],
+      ans: 1,
+      explain: "B. Aramco was the U.S. opening into the peninsula — transformational for state revenue, but it bound Saudi Arabia to a foreign partner indefinitely." }
+  ],
+
+  egypt: [
+    { stem: "Egypt's 1923 Constitution most directly constrained which actor's ability to exercise power unilaterally?",
+      level: "L9",
+      opts: [
+        "The British residency, which under the new charter was formally excluded from any role in Egyptian domestic legislation outside the four reserved-points areas",
+        "The Wafd Party, which was now obligated to share legislative authority with an appointed Senate dominated by landholders and palace-loyal notables",
+        "The King, who was now formally obligated to govern through an elected parliament rather than by personal decree, even where the dynasty held majority support",
+        "Foreign investors, whose long-standing control of Egyptian cotton exports and the Suez Canal Company became subject to parliamentary oversight for the first time"
+      ],
+      ans: 2,
+      explain: "C. The 1923 constitution targeted royal personal rule. Britain's reserved points were untouched; foreign investors weren't constrained; the Wafd was empowered, not limited." },
+    { stem: "The 1936 Anglo-Egyptian Treaty is most accurately characterized as:",
+      level: "L9",
+      opts: [
+        "A formal end to British military presence in Egypt that fulfilled the Wafd Party's longstanding nationalist demand for full British evacuation from the country",
+        "A wartime defensive alliance against Italy's expanding North African empire that temporarily united king, parliament, and British command under a single security framework",
+        "A compromise that relocated British forces to the Suez Canal zone while preserving British military access and Egyptian nominal sovereignty over the rest of the country",
+        "A British concession that granted Egypt full sovereign control of the Suez Canal in exchange for guaranteed Egyptian military cooperation in any future regional conflict"
+      ],
+      ans: 2,
+      explain: "C. British forces moved to the Canal Zone but military access remained; Egypt got nominal sovereignty over the rest. Compromise, not evacuation." },
+    { stem: "Egypt's Wafd Party is best described as:",
+      level: "L9",
+      opts: [
+        "A socialist movement that sought to nationalize British-owned industries and redistribute land from the pasha class to Egypt's fellahin majority through parliamentary action",
+        "A religious nationalist organization drawing legitimacy from the Al-Azhar clerical establishment and the broader Salafi reform movements of the early twentieth century",
+        "A broad cross-class nationalist coalition that consistently won popular elections but was repeatedly prevented from governing by king dissolutions and British vetoes",
+        "A pro-monarchy parliamentary faction that cooperated with British residency officials to maintain stability against the more radical Muslim Brotherhood and student movements"
+      ],
+      ans: 2,
+      explain: "C. The Wafd was the dominant nationalist coalition — popular but structurally blocked by king and Britain. 'Always the winner, never the ruler.'" },
+    { stem: "The 1942 'Abdin Palace incident demonstrated that:",
+      level: "L9",
+      opts: [
+        "Wafd electoral mandates had finally consolidated Egyptian sovereignty over British policy",
+        "Egyptian sovereignty remained illusory even in WWII — British tanks could dictate which government Farouk appointed",
+        "King Farouk had successfully expelled the British residency from Cairo",
+        "The 1923 constitution had matured into a stable parliamentary democracy"
+      ],
+      ans: 1,
+      explain: "B. British tanks surrounded the palace and forced Farouk to appoint a Wafd PM. Independence theater, exposed." }
+  ],
+
+  comparative: [
+    { stem: "Which of the following best captures the most significant structural difference between Reza Shah's Iran and Ibn Saud's Saudi Arabia?",
+      level: "L8 + L9",
+      opts: [
+        "Iran had stronger institutional foundations than Saudi Arabia because the Majlis predated Reza Shah's reign and continued to function as a parliamentary body through 1941",
+        "Saudi Arabia modernized more aggressively than Iran in the 1930s because Aramco oil revenues funded rapid infrastructure, education, and military spending across the kingdom",
+        "Both states were equally dependent on British strategic support — Saudi Arabia through Aramco's joint protection clauses, Iran through the dominant Anglo-Iranian Oil Company",
+        "Reza Shah's authority required constant coercive enforcement against resistant institutions, while Ibn Saud's Wahhabi-tribal bargain created self-sustaining legitimacy that did not need imposing"
+      ],
+      ans: 3,
+      explain: "D. Reza pushed against society; Ibn Saud built within it. The legitimacy mechanism is the structural difference — coercion vs. self-sustaining bargain." },
+    { stem: "Why do IB historians describe Egypt as the 'comparative pivot' of the three-country case study?",
+      level: "L9",
+      opts: [
+        "Egypt was geographically positioned between Iran and Saudi Arabia and brokered diplomatic relations between them",
+        "Egypt's deadlock — failed authoritarianism AND failed democracy — proves Iran's and Saudi Arabia's outcomes were structural choices, not destiny",
+        "Egypt was the wealthiest of the three states and set the economic baseline against which Iran and Saudi Arabia are measured",
+        "Egypt's 1923 constitution was the model that both Reza Shah and Ibn Saud studied when designing their own state structures"
+      ],
+      ans: 1,
+      explain: "B. Egypt = the control case. Without Egypt, you can't show that Reza's coercion and Ibn Saud's bargain were choices among alternatives." },
+    { stem: "Which IB criterion is hardest to score high for ALL THREE states' interwar consolidation efforts?",
+      level: "L7+",
+      opts: [
+        "Scale — none of the three states reached truly nationwide reach by 1941",
+        "Duration — only the Saud bargain endured; Pahlavi Iran lasted to 1979 but was overthrown, and Egypt's order broke by 1952",
+        "Impact — only Reza Shah's Iran attempted deep social transformation, and even that was coercive and partial",
+        "Relevance — outside oil-era Saudi Arabia, regional and global significance was limited"
+      ],
+      ans: 2,
+      explain: "C. Impact = depth of social/economic transformation. Saudi Arabia barely tried; Egypt was structurally blocked; Iran tried coercively and only partially succeeded." }
+  ]
+};
+
+/* ---------- MATCHING SETS ---------- */
+const MATCH = {
+  iran: {
+    title: "Reza Shah's Iran",
+    pairs: [
+      { event: "1928 abolition of capitulations",        sig: "Ended extraterritorial legal privileges for foreigners — a key marker of sovereignty recovery" },
+      { event: "1935 renaming of Persia to Iran",        sig: "Assertion of pre-Islamic Aryan national identity; signal of cultural alignment with Germany" },
+      { event: "Forced unveiling decree (1936)",         sig: "State-enforced secular dress code; police removed headscarves; the most coercive social reform" },
+      { event: "Trans-Iranian Railway (1930s)",          sig: "Linked Caspian to Persian Gulf without crossing British- or Russian-controlled territory — strategic independence" },
+      { event: "Anglo-Soviet invasion & abdication (1941)", sig: "Exposed the ceiling of Iranian sovereignty — foreign powers could override the state when strategic interests demanded" }
+    ]
+  },
+  saudi: {
+    title: "Ibn Saud's Saudi Arabia",
+    pairs: [
+      { event: "1902 capture of Riyadh",        sig: "Ibn Saud retakes ancestral capital at ~22; military credibility established before any alliance" },
+      { event: "Wahhabi clerical alliance",     sig: "Religious legitimacy substituting for tribal kinship — governance across clans owing no blood loyalty" },
+      { event: "1925 conquest of Hejaz",        sig: "Custodianship of Mecca and Medina — Islamic authority no foreign power could grant or revoke" },
+      { event: "1929 Ikhwan suppression",       sig: "Pragmatic decision to crush his own religious shock force when their radicalism threatened the state" },
+      { event: "1933 Aramco concession",        sig: "U.S. economic entry into the peninsula — foundation for oil-era transformation but long-term dependency" }
+    ]
+  },
+  egypt: {
+    title: "Egypt's Interwar Period",
+    pairs: [
+      { event: "1922 nominal independence",     sig: "Britain ends formal protectorate while keeping Suez, military, and economic veto — sovereignty in name only" },
+      { event: "1923 Constitution suspended (1928)", sig: "King Fuad dissolves parliament when Wafd majority threatens him — constitution's first major test, failed" },
+      { event: "Wafd Party",                    sig: "Cross-class coalition that won every free election but was blocked by king and British vetoes" },
+      { event: "1936 Anglo-Egyptian Treaty",    sig: "British troops relocated to Suez Canal zone; military partnership but conditional sovereignty" },
+      { event: "1942 'Abdin Palace incident",   sig: "British tanks surrounded the royal palace and forced Farouk to appoint a Wafd PM — sovereignty illusory" }
+    ]
+  }
+};
+
+/* ---------- SOURCE / STIMULUS ---------- */
+const SOURCES = {
+  iran: [
+    { tag: "SOURCE A · L8",
+      quote: "The state must lead where the people cannot yet see to go. Dress, language, law — these are not mere customs. They are the visible face of civilization or its absence. A nation that wishes to take its rightful place among modern powers cannot present itself in the garb of a medieval past.",
+      attrib: "— Reza Shah Pahlavi, paraphrased from recorded speeches and decrees, 1930s",
+      prompts: [
+        { q: "(a) Identify ONE specific policy from L8 that directly reflects this argument.",
+          model: "The 1936 forced unveiling decree (Kashf-e Hijab). It applied state coercion to dress as a 'visible face of civilization' — exactly the logic in the source." },
+        { q: "(b) Identify ONE limitation of this approach. What did Reza Shah's model fail to account for?",
+          model: "It failed to account for the absence of a domestic legitimacy base — the clergy, bazaar, and rural population never consented. Coercive secularization required constant enforcement and alienated the Shia clergy permanently, weakening the regime by 1941." }
+      ] },
+    { tag: "BONUS · L8",
+      quote: "If we cannot run our own railway through our own land, we are no nation at all.",
+      attrib: "— Apocryphal Reza Shah remark, c. 1928",
+      prompts: [
+        { q: "What policy is this gesturing toward, and what was its strategic significance?",
+          model: "The Trans-Iranian Railway. Strategic significance: it linked Caspian to Persian Gulf entirely through Iranian territory — a direct rejection of dependence on British- or Russian-controlled corridors." }
+      ] }
+  ],
+  saudi: [
+    { tag: "SOURCE B · L9",
+      quote: "Ibn Saud has achieved what few men in history have managed: the transformation of a tribal patchwork into a functioning state — without a bureaucracy, without a written law code, without the apparatus of the modern nation. He governs not through institutions but through persons, not through law but through loyalty. The question that remains unanswered is whether what he has built can survive the man who built it.",
+      attrib: "— British Foreign Office internal assessment, c. 1928 (paraphrased)",
+      prompts: [
+        { q: "(a) What specific weakness in Ibn Saud's state-building does this source identify?",
+          model: "Personalist rule — authority embedded in Ibn Saud personally rather than in durable institutions. Loyalty (to him) substitutes for law; persons substitute for bureaucracy. The state's continuity depends on his life." },
+        { q: "(b) Did the state survive the man? Why or why not?",
+          model: "Yes. The Saud-Wahhabi bargain created self-sustaining religious-tribal legitimacy that outlived Ibn Saud (d. 1953). The state has continued under his sons and grandsons because the legitimacy mechanism — crown plus pulpit — did not depend on his person alone." }
+      ] }
+  ],
+  egypt: [
+    { tag: "SOURCE C · L9",
+      quote: "We have a constitution. We have a parliament. We have a people who have chosen their representatives. And yet — the constitution is suspended when it speaks too loudly; the parliament dissolved when its mandate proves inconvenient; and the people's choice overruled by a king who himself governs at foreign pleasure. Egypt possesses every instrument of self-governance. What it lacks is the sovereignty to use them.",
+      attrib: "— Wafd Party political pamphlet, c. 1930 (paraphrased)",
+      prompts: [
+        { q: "(a) Identify TWO distinct actors named or implied in this source who are obstructing Egyptian self-governance.",
+          model: "(1) The King (Fuad — dissolved parliament in 1928, suspended the 1923 constitution). (2) The British residency (the 'foreign pleasure' the king governs at — the Suez/military/economic reserved points)." },
+        { q: "(b) Using L9 evidence, explain how this dynamic contributed to Egypt's failure to consolidate either authoritarian or democratic rule.",
+          model: "Three-way deadlock: king, Wafd, and Britain could each block but none could rule alone. Authoritarianism failed because Fuad/Farouk lacked Reza Shah's autonomy (Britain constrained them). Democracy failed because the Wafd's electoral mandates were repeatedly overruled — see the 1928 dissolution and the 1942 'Abdin Palace incident, when British tanks forced Farouk to appoint a Wafd PM. Sovereignty was the missing variable." }
+      ] }
+  ]
+};
+
+/* ---------- DECK / MODE METADATA ---------- */
+const DECKS = [
+  { id: "iran",     title: "Iran (Reza Shah)",            tag: "L8",        blurb: "1921 coup → 1941 abdication. Capitulations, Aryan rebrand, forced unveiling, the Trans-Iranian Railway, and coercive secularization." },
+  { id: "saudi",    title: "Saudi Arabia (Ibn Saud)",     tag: "L9",        blurb: "1902 Riyadh raid → 1933 Aramco. Wahhabi alliance, Hejaz conquest, Ikhwan suppression, the Saud-Wahhabi bargain." },
+  { id: "egypt",    title: "Egypt (Wafd / Fuad / Farouk)", tag: "L9",        blurb: "1922 nominal independence → 1942 'Abdin. Three-way deadlock between king, Wafd, and Britain — the comparative pivot." },
+  { id: "comparative", title: "Comparative (IB Criteria)",  tag: "L7+",       blurb: "Scale, Duration, Impact, Relevance applied across all three states. Built for SAQ 2 and the CEAL paragraph." },
+  { id: "mixed",    title: "Mixed (All Decks Shuffled)",  tag: "EXAM SIM",  blurb: "Every flashcard, every MC, every matching set — interleaved like the actual May 8 paper." }
+];
+
+const MODES = [
+  { id: "flash",  title: "Flashcards (SR)",     tag: "PRIMARY",    blurb: "Term → definition + memory hook. Spaced repetition: cards you miss come back; cards you know retire. The core 30-min drill." },
+  { id: "mc",     title: "Multiple Choice",     tag: "PART 1",     blurb: "Exam-style MC questions with instant feedback and explanations. Mirrors the 10-MC section of the assessment." },
+  { id: "match",  title: "Matching Drill",      tag: "PART 2",     blurb: "Click an event, then click its significance. Mirrors Part 2's three matching sets." },
+  { id: "src",    title: "Source / Stimulus",   tag: "PART 3",     blurb: "Read a quote, type your answer, then reveal the model response. Mirrors Part 3's stimulus-analysis prompts." }
+];
+
+/* =====================================================================
+   STATE
+   ===================================================================== */
+
+let state = {
+  deck: null,
+  mode: null,
+  // flashcard SR state:
+  queue: [],         // array of { idx, box, due }   (using deck-card refs)
+  cards: [],         // resolved card objects, in deck/mixed
+  pos: 0,            // counter (cards seen)
+  flipped: false,
+  mastered: 0, learning: 0, again: 0, total: 0,
+  // mc state:
+  mcList: [], mcIdx: 0, mcAnswered: false, mcRight: 0, mcWrong: 0,
+  // match state:
+  matchSets: [], matchSetIdx: 0,
+  matchLeftPick: null, matchRightPick: null,
+  matchCorrect: 0, matchAttempts: 0,
+  // src state:
+  srcList: [], srcIdx: 0, srcPromptIdx: 0
+};
+
+/* =====================================================================
+   SETUP RENDER
+   ===================================================================== */
+
+function renderSetup() {
+  const dg = document.getElementById('deckGrid');
+  dg.innerHTML = "";
+  DECKS.forEach(d => {
+    const cards = (d.id === 'mixed') ? sumAll(CARDS) : (CARDS[d.id]?.length ?? 0);
+    const mc    = (d.id === 'mixed') ? sumAll(MC)    : (MC[d.id]?.length ?? 0);
+    const btn = document.createElement('button');
+    btn.className = 'pick';
+    btn.dataset.deck = d.id;
+    btn.innerHTML = `
+      <div class="tag">${d.tag}</div>
+      <h3>${d.title}</h3>
+      <p>${d.blurb}</p>
+      <div class="count">${cards} flashcards · ${mc} MC</div>
+    `;
+    btn.onclick = () => { state.deck = d.id; refreshActive(); };
+    dg.appendChild(btn);
+  });
+
+  const mg = document.getElementById('modeGrid');
+  mg.innerHTML = "";
+  MODES.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'pick';
+    btn.dataset.mode = m.id;
+    btn.innerHTML = `
+      <div class="tag">${m.tag}</div>
+      <h3>${m.title}</h3>
+      <p>${m.blurb}</p>
+    `;
+    btn.onclick = () => { state.mode = m.id; refreshActive(); };
+    mg.appendChild(btn);
+  });
+}
+function sumAll(obj) { return Object.values(obj).reduce((a,b)=>a+b.length,0); }
+function refreshActive() {
+  document.querySelectorAll('#deckGrid .pick').forEach(el =>
+    el.classList.toggle('active', el.dataset.deck === state.deck));
+  document.querySelectorAll('#modeGrid .pick').forEach(el =>
+    el.classList.toggle('active', el.dataset.mode === state.mode));
+  document.getElementById('startBtn').disabled = !(state.deck && state.mode);
+}
+
+document.getElementById('startBtn').onclick = startSession;
+document.getElementById('quitBtn').onclick = endSession;
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function deckCards(id) {
+  if (id === 'mixed') return Object.entries(CARDS).flatMap(([k,v]) => v.map(c => ({...c, _src:k})));
+  return CARDS[id].map(c => ({...c, _src:id}));
+}
+function deckMC(id) {
+  if (id === 'mixed') return Object.entries(MC).flatMap(([k,v]) => v.map(c => ({...c, _src:k})));
+  return MC[id].map(c => ({...c, _src:id}));
+}
+function deckMatch(id) {
+  if (id === 'iran' || id === 'saudi' || id === 'egypt') return [MATCH[id]];
+  if (id === 'mixed') return [MATCH.iran, MATCH.saudi, MATCH.egypt];
+  // comparative deck has no matching set; fall back to all three
+  return [MATCH.iran, MATCH.saudi, MATCH.egypt];
+}
+function deckSrc(id) {
+  if (id === 'mixed' || id === 'comparative') return [...SOURCES.iran, ...SOURCES.saudi, ...SOURCES.egypt];
+  return SOURCES[id] || [];
+}
+
+/* =====================================================================
+   SESSION DISPATCH
+   ===================================================================== */
+
+function startSession() {
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('play').style.display = 'flex';
+  setCrumb();
+  if (state.mode === 'flash') startFlash();
+  else if (state.mode === 'mc') startMC();
+  else if (state.mode === 'match') startMatch();
+  else if (state.mode === 'src') startSrc();
+}
+function endSession() {
+  document.getElementById('play').style.display = 'none';
+  document.getElementById('setup').style.display = 'flex';
+  state.deck = null; state.mode = null;
+  refreshActive();
+}
+function setCrumb() {
+  const d = DECKS.find(x => x.id === state.deck)?.title ?? "—";
+  const m = MODES.find(x => x.id === state.mode)?.title ?? "—";
+  document.getElementById('crumb').innerHTML =
+    `<b>${d}</b><span class="sep">·</span>${m}`;
+}
+
+/* =====================================================================
+   MODE 1 · FLASHCARDS · LEITNER-STYLE SPACED REPETITION
+   ===================================================================== */
+
+function startFlash() {
+  state.cards = shuffle(deckCards(state.deck));
+  state.queue = state.cards.map((_, idx) => ({ idx, box: 1, due: 0 }));
+  state.pos = 0;
+  state.flipped = false;
+  state.mastered = 0; state.learning = state.cards.length; state.again = 0;
+  state.total = state.cards.length;
+  renderFlash();
+}
+
+function renderFlash() {
+  const stage = document.getElementById('stage');
+  if (state.queue.length === 0) {
+    stage.innerHTML = doneBlock(`Mastered all ${state.total} cards.`,
+      [['cards', state.total], ['rounds', state.pos]]);
+    setProgress();
+    return;
+  }
+  // pull first due card
+  const next = state.queue.findIndex(q => q.due <= state.pos);
+  const item = (next >= 0) ? state.queue[next] : state.queue[0];
+  const card = state.cards[item.idx];
+  state.flipped = false;
+
+  stage.innerHTML = `
+    <div class="card-wrap">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="face-tag">Term <span class="level">Box ${item.box} / 4 · ${labelSrc(card._src)}</span></div>
+          <div class="term">${card.term}</div>
+          <div class="small-prompt">Click card or press <kbd style="background:#fff;border:1px solid var(--line);padding:2px 6px;border-radius:3px;font-family:monospace;">Space</kbd> to flip</div>
+        </div>
+        <div class="face back">
+          <div class="face-tag">Definition <span class="level">${labelSrc(card._src)}</span></div>
+          <div class="definition">${card.def}</div>
+          <div class="hook-label">Memory hook</div>
+          <div class="hook">${card.hook}</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="flip-prompt" id="flipBtn">Show definition</button>
+
+    <div class="rate-row hidden" id="rateRow">
+      <button class="rate again" data-r="0">Again<small>I missed it (resets)</small></button>
+      <button class="rate hard"  data-r="1">Hard<small>Got it, barely</small></button>
+      <button class="rate good"  data-r="2">Good<small>Solid recall</small></button>
+      <button class="rate easy"  data-r="3">Easy<small>Retire this card</small></button>
+    </div>
+  `;
+  setProgress();
+
+  const cardEl = document.getElementById('card');
+  const flipBtn = document.getElementById('flipBtn');
+  const rateRow = document.getElementById('rateRow');
+
+  function flip() {
+    state.flipped = !state.flipped;
+    cardEl.classList.toggle('flipped', state.flipped);
+    rateRow.classList.toggle('hidden', !state.flipped);
+    flipBtn.style.display = state.flipped ? 'none' : 'inline-block';
+  }
+  cardEl.onclick = flip;
+  flipBtn.onclick = flip;
+
+  rateRow.querySelectorAll('.rate').forEach(b => {
+    b.onclick = () => rate(parseInt(b.dataset.r,10), item);
+  });
+}
+
+function rate(r, item) {
+  // Leitner-style: box 1..4. Box 4 = mastered.
+  // r: 0 again, 1 hard, 2 good, 3 easy
+  const offsets = { 0: 2, 1: 5, 2: 10, 3: 99 };
+  if (r === 0) item.box = 1;
+  else if (r === 1) item.box = Math.max(1, item.box);    // stay
+  else if (r === 2) item.box = Math.min(4, item.box + 1);
+  else if (r === 3) item.box = 4;
+
+  // remove from queue:
+  const i = state.queue.indexOf(item);
+  state.queue.splice(i, 1);
+
+  if (item.box >= 4) {
+    state.mastered++; state.learning = Math.max(0, state.learning - (state.queue.indexOf(item)===-1 ? 0 : 0));
+  } else {
+    item.due = state.pos + offsets[r];
+    // re-insert in due-order
+    const insertAt = state.queue.findIndex(q => q.due > item.due);
+    if (insertAt < 0) state.queue.push(item);
+    else state.queue.splice(insertAt, 0, item);
+  }
+  // counters
+  state.again = (r === 0) ? state.again + 1 : state.again;
+  state.learning = state.queue.length;
+  state.pos++;
+  renderFlash();
+}
+
+function setProgress() {
+  if (state.mode === 'flash') {
+    document.getElementById('progress').innerHTML = `
+      <span class="pill">Seen <b>${state.pos}</b></span>
+      <span class="pill good">Mastered <b>${state.mastered}</b>/${state.total}</span>
+      <span class="pill warn">Learning <b>${state.learning}</b></span>
+      <span class="pill bad">Misses <b>${state.again}</b></span>
+    `;
+  } else if (state.mode === 'mc') {
+    document.getElementById('progress').innerHTML = `
+      <span class="pill">Q <b>${Math.min(state.mcIdx+1, state.mcList.length)}</b>/${state.mcList.length}</span>
+      <span class="pill good">Right <b>${state.mcRight}</b></span>
+      <span class="pill bad">Wrong <b>${state.mcWrong}</b></span>
+    `;
+  } else if (state.mode === 'match') {
+    const set = state.matchSets[state.matchSetIdx];
+    document.getElementById('progress').innerHTML = `
+      <span class="pill">Set <b>${state.matchSetIdx+1}</b>/${state.matchSets.length}</span>
+      <span class="pill good">Matched <b>${state.matchCorrect}</b></span>
+      <span class="pill warn">Attempts <b>${state.matchAttempts}</b></span>
+    `;
+  } else if (state.mode === 'src') {
+    document.getElementById('progress').innerHTML = `
+      <span class="pill">Source <b>${state.srcIdx+1}</b>/${state.srcList.length}</span>
+    `;
+  }
+}
+
+function labelSrc(s) {
+  return ({iran:"L8 · Iran", saudi:"L9 · Saudi", egypt:"L9 · Egypt", comparative:"L7+ · Comparative"})[s] || s;
+}
+
+function doneBlock(msg, stats) {
+  return `
+    <div class="done-card" style="margin-top: 60px;">
+      <div class="src-tag">Session Complete</div>
+      <h2>${msg}</h2>
+      <div class="stat-row">
+        ${stats.map(s => `<div class="stat"><div class="n">${s[1]}</div><div class="l">${s[0]}</div></div>`).join('')}
+      </div>
+      <button class="start-btn" onclick="endSession()">Back to Decks</button>
+    </div>
+  `;
+}
+
+/* =====================================================================
+   MODE 2 · MULTIPLE CHOICE
+   ===================================================================== */
+
+function startMC() {
+  state.mcList = shuffle(deckMC(state.deck));
+  // also shuffle option order while preserving correct index
+  state.mcList = state.mcList.map(q => {
+    const order = shuffle([0,1,2,3]);
+    return {
+      ...q,
+      _opts: order.map(i => q.opts[i]),
+      _ans:  order.indexOf(q.ans)
+    };
+  });
+  state.mcIdx = 0; state.mcAnswered = false;
+  state.mcRight = 0; state.mcWrong = 0;
+  renderMC();
+}
+
+function renderMC() {
+  const stage = document.getElementById('stage');
+  if (state.mcIdx >= state.mcList.length) {
+    stage.innerHTML = doneBlock(
+      `${state.mcRight}/${state.mcList.length} correct.`,
+      [['right', state.mcRight], ['wrong', state.mcWrong], ['questions', state.mcList.length]]
+    );
+    setProgress(); return;
+  }
+  const q = state.mcList[state.mcIdx];
+  const letters = ['A','B','C','D'];
+  stage.innerHTML = `
+    <div class="mc-card">
+      <div class="mc-stem"><span class="ltag">[${q.level}]</span>${q.stem}</div>
+      <div class="mc-opts" id="mcOpts">
+        ${q._opts.map((o,i) => `
+          <div class="mc-opt" data-i="${i}">
+            <div class="ltr">${letters[i]}</div>
+            <div>${o}</div>
+          </div>`).join('')}
+      </div>
+      <div class="mc-feedback" id="mcFB"></div>
+      <div style="margin-top: 16px; display: flex; justify-content: flex-end;">
+        <button class="start-btn" id="mcNext" style="display:none;">Next →</button>
+      </div>
+    </div>
+  `;
+  setProgress();
+  state.mcAnswered = false;
+
+  document.querySelectorAll('#mcOpts .mc-opt').forEach(el => {
+    el.onclick = () => {
+      if (state.mcAnswered) return;
+      state.mcAnswered = true;
+      const choice = parseInt(el.dataset.i,10);
+      const right = (choice === q._ans);
+      document.querySelectorAll('#mcOpts .mc-opt').forEach((opt,i) => {
+        if (i === q._ans) opt.classList.add('correct');
+        if (i === choice && !right) opt.classList.add('wrong');
+      });
+      const fb = document.getElementById('mcFB');
+      fb.classList.add('show');
+      fb.innerHTML = right
+        ? `<b>Correct.</b> ${q.explain}`
+        : `<b>Not quite.</b> ${q.explain}`;
+      if (right) state.mcRight++; else state.mcWrong++;
+      document.getElementById('mcNext').style.display = 'inline-block';
+      setProgress();
+    };
+  });
+
+  document.getElementById('mcNext').onclick = () => {
+    state.mcIdx++;
+    renderMC();
+  };
+}
+
+/* =====================================================================
+   MODE 3 · MATCHING
+   ===================================================================== */
+
+function startMatch() {
+  state.matchSets = deckMatch(state.deck);
+  state.matchSetIdx = 0;
+  state.matchCorrect = 0; state.matchAttempts = 0;
+  renderMatch();
+}
+
+function renderMatch() {
+  const stage = document.getElementById('stage');
+  if (state.matchSetIdx >= state.matchSets.length) {
+    stage.innerHTML = doneBlock(
+      `Completed ${state.matchSets.length} matching set${state.matchSets.length>1?'s':''}.`,
+      [['matched', state.matchCorrect], ['attempts', state.matchAttempts]]
+    );
+    setProgress(); return;
+  }
+
+  const set = state.matchSets[state.matchSetIdx];
+  // randomize right column letters
+  const rightOrder = shuffle(set.pairs.map((_,i) => i));
+  const letters = ['A','B','C','D','E','F'];
+  const left = set.pairs.map((p,i) => ({ ...p, leftIdx: i, leftKey: 'L'+i, matched: false }));
+  const right = rightOrder.map((origIdx,i) => ({
+    sig: set.pairs[origIdx].sig,
+    letter: letters[i],
+    origIdx, rightKey: 'R'+i, matched: false
+  }));
+
+  stage.innerHTML = `
+    <div style="text-align:center; max-width:1180px; width:100%;">
+      <div class="src-tag">Matching Set ${state.matchSetIdx+1} · ${set.title}</div>
+      <p style="font-size:14px; color: var(--ink-soft); font-family: 'Helvetica Neue', Arial, sans-serif; margin: 6px 0 18px;">
+        Click an event on the left, then click its matching significance on the right.
+      </p>
+    </div>
+    <div class="match-wrap">
+      <div class="match-col">
+        <h3>Event</h3>
+        <div id="matchLeft"></div>
+      </div>
+      <div class="match-col">
+        <h3>Significance</h3>
+        <div id="matchRight"></div>
+      </div>
+    </div>
+    <div style="margin-top: 18px;">
+      <button class="start-btn" id="nextSet" style="display:none;">Next →</button>
+    </div>
+  `;
+
+  const leftHost = document.getElementById('matchLeft');
+  const rightHost = document.getElementById('matchRight');
+  left.forEach(L => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.dataset.k = L.leftKey;
+    el.innerHTML = `<span class="ltr-badge">${L.leftIdx+1}.</span> ${L.event}`;
+    el.onclick = () => pickLeft(L, el);
+    leftHost.appendChild(el);
+  });
+  right.forEach(R => {
+    const el = document.createElement('div');
+    el.className = 'match-item';
+    el.dataset.k = R.rightKey;
+    el.innerHTML = `<span class="ltr-badge">${R.letter}.</span> ${R.sig}`;
+    el.onclick = () => pickRight(R, el);
+    rightHost.appendChild(el);
+  });
+  setProgress();
+
+  let pickedL = null, pickedR = null, lEl = null, rEl = null;
+  let correctSoFar = 0;
+  const total = left.length;
+
+  function clearSel() {
+    if (lEl) lEl.classList.remove('selected');
+    if (rEl) rEl.classList.remove('selected');
+    pickedL = pickedR = null; lEl = rEl = null;
+  }
+  function pickLeft(L, el) {
+    if (L.matched) return;
+    if (lEl) lEl.classList.remove('selected');
+    pickedL = L; lEl = el; el.classList.add('selected');
+    if (pickedR) tryMatch();
+  }
+  function pickRight(R, el) {
+    if (R.matched) return;
+    if (rEl) rEl.classList.remove('selected');
+    pickedR = R; rEl = el; el.classList.add('selected');
+    if (pickedL) tryMatch();
+  }
+  function tryMatch() {
+    state.matchAttempts++;
+    const ok = (pickedL.leftIdx === pickedR.origIdx);
+    if (ok) {
+      pickedL.matched = true; pickedR.matched = true;
+      lEl.classList.remove('selected'); rEl.classList.remove('selected');
+      lEl.classList.add('matched'); rEl.classList.add('matched');
+      state.matchCorrect++;
+      correctSoFar++;
+      pickedL = pickedR = null; lEl = rEl = null;
+      if (correctSoFar === total) {
+        document.getElementById('nextSet').style.display = 'inline-block';
+      }
+    } else {
+      const shakeL = lEl, shakeR = rEl;
+      shakeL.classList.add('shake'); shakeR.classList.add('shake');
+      setTimeout(() => {
+        shakeL.classList.remove('shake', 'selected');
+        shakeR.classList.remove('shake', 'selected');
+      }, 400);
+      pickedL = pickedR = null; lEl = rEl = null;
+    }
+    setProgress();
+  }
+
+  document.getElementById('nextSet').onclick = () => {
+    state.matchSetIdx++;
+    renderMatch();
+  };
+}
+
+/* =====================================================================
+   MODE 4 · SOURCE / STIMULUS
+   ===================================================================== */
+
+function startSrc() {
+  state.srcList = deckSrc(state.deck);
+  if (state.srcList.length === 0) {
+    document.getElementById('stage').innerHTML = doneBlock(
+      "No source items in this deck. Try Iran, Saudi, Egypt, or Mixed.",
+      [['sources', 0]]
+    );
+    setProgress();
+    return;
+  }
+  state.srcIdx = 0; state.srcPromptIdx = 0;
+  renderSrc();
+}
+
+function renderSrc() {
+  const stage = document.getElementById('stage');
+  if (state.srcIdx >= state.srcList.length) {
+    stage.innerHTML = doneBlock(
+      `Worked through ${state.srcList.length} source${state.srcList.length>1?'s':''}.`,
+      [['sources', state.srcList.length]]
+    );
+    setProgress(); return;
+  }
+  const s = state.srcList[state.srcIdx];
+  const p = s.prompts[state.srcPromptIdx];
+
+  stage.innerHTML = `
+    <div class="src-card">
+      <div class="src-tag">${s.tag}</div>
+      <div class="src-quote">"${s.quote}"</div>
+      <div class="src-attrib">${s.attrib}</div>
+      <div class="src-prompt">${p.q}</div>
+      <textarea class="src-answer" id="srcAns" placeholder="Type your answer here — be specific, names + dates + concrete evidence."></textarea>
+      <button class="src-reveal-btn" id="srcReveal">Reveal model answer</button>
+      <div class="src-model" id="srcModel"><b>Model answer.</b> ${p.model}</div>
+      <div style="margin-top: 16px; display: flex; justify-content: space-between; gap: 10px;">
+        <button class="quit-btn" id="srcSkip">Skip</button>
+        <button class="start-btn" id="srcNext">Next →</button>
+      </div>
+    </div>
+  `;
+  setProgress();
+
+  document.getElementById('srcReveal').onclick = () => {
+    document.getElementById('srcModel').classList.add('show');
+  };
+  document.getElementById('srcNext').onclick = advanceSrc;
+  document.getElementById('srcSkip').onclick = advanceSrc;
+}
+
+function advanceSrc() {
+  const s = state.srcList[state.srcIdx];
+  if (state.srcPromptIdx + 1 < s.prompts.length) {
+    state.srcPromptIdx++;
+  } else {
+    state.srcIdx++;
+    state.srcPromptIdx = 0;
+  }
+  renderSrc();
+}
+
+/* =====================================================================
+   KEYBOARD
+   ===================================================================== */
+
+document.addEventListener('keydown', (e) => {
+  if (document.getElementById('play').style.display === 'none') return;
+  if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+
+  if (e.key === 'Escape') { endSession(); return; }
+
+  if (state.mode === 'flash') {
+    const card = document.getElementById('card');
+    if (!card) return;
+    if (e.code === 'Space') {
+      e.preventDefault();
+      card.click();
+    } else if (state.flipped && ['1','2','3','4'].includes(e.key)) {
+      const map = {'1':0,'2':1,'3':2,'4':3};
+      const btn = document.querySelector(`.rate[data-r="${map[e.key]}"]`);
+      if (btn) btn.click();
+    }
+  }
+});
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+
+renderSetup();
+</script>
+
+</body>
+</html>
