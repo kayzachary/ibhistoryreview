@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IB History Timer</title>
+<style>
+:root {
+  --bg: #f0f2f7; --bg2: #ffffff; --bg3: #e4e7ef;
+  --text: #0a0f1e; --text2: #445566; --text3: #8899aa;
+  --gold: #a07820; --gold2: #c09030;
+  --green: #1a5a1a; --green2: #2a7a2a;
+  --card-bg: #ffffff; --card-border: #c4ccd8;
+  --seg-bg: #dde0e8; --seg-border: #c4ccd8;
+  --timer-font: 'Courier New','Lucida Console',monospace;
+  --timer-color: #a07820;
+  --timer-glow: none;
+  --warn-color: #d4940a;
+}
+:root.dark {
+  --bg: #080d1a; --bg2: #0f1628; --bg3: #151d2e;
+  --text: #ffffff; --text2: #8899aa; --text3: #445566;
+  --gold: #c9a84c; --gold2: #e0be60;
+  --green: #2a6a2a; --green2: #3a8a3a;
+  --card-bg: #0f1628; --card-border: #1e2d44;
+  --seg-bg: #151d2e; --seg-border: #1e2d44;
+  --timer-color: #c9a84c;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',Arial,sans-serif; min-height:100vh; transition:background 0.3s,color 0.3s; }
+.screen { display:none; min-height:100vh; flex-direction:column; align-items:center; justify-content:center; padding:70px 20px 90px; position:relative; }
+.screen.active { display:flex; }
+
+/* topbar */
+.topbar { position:fixed; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:16px 28px; z-index:100; }
+.back-btn { background:var(--bg3); border:2px solid var(--card-border); border-radius:10px; padding:12px 22px; cursor:pointer; font-size:1rem; color:var(--text2); font-weight:700; letter-spacing:0.1em; text-transform:uppercase; transition:all 0.2s; }
+.back-btn:hover { border-color:var(--gold); color:var(--gold); }
+.theme-toggle { background:var(--bg3); border:2px solid var(--card-border); border-radius:28px; padding:10px 22px; cursor:pointer; font-size:1rem; color:var(--text2); transition:all 0.2s; font-weight:600; }
+.theme-toggle:hover { border-color:var(--gold); color:var(--gold); }
+
+/* menu */
+.menu-title { font-size:clamp(2.2rem,5.5vw,4.5rem); font-weight:900; color:var(--gold); letter-spacing:0.3em; text-transform:uppercase; text-align:center; margin-bottom:8px; }
+.menu-sub { font-size:clamp(0.75rem,1.5vw,1rem); color:var(--text3); letter-spacing:0.2em; text-transform:uppercase; text-align:center; }
+.section-label { font-size:clamp(0.62rem,1.1vw,0.82rem); color:var(--text3); letter-spacing:0.28em; text-transform:uppercase; font-weight:700; margin:22px 0 12px; text-align:center; width:100%; }
+
+/* skin picker */
+.skin-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:11px; width:min(96vw,860px); }
+@media(max-width:700px){ .skin-grid { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:420px){ .skin-grid { grid-template-columns:repeat(2,1fr); } }
+.skin-card { border-radius:12px; padding:14px 10px 11px; cursor:pointer; text-align:center; transition:all 0.2s; border:2px solid transparent; }
+.skin-card:hover { transform:translateY(-3px); opacity:0.92; }
+.skin-card.active { box-shadow:0 0 0 3px #fff, 0 0 12px rgba(255,255,255,0.28); }
+.skin-prev-time { font-size:clamp(1.6rem,3.8vw,2.5rem); font-weight:900; letter-spacing:0.04em; line-height:1; margin-bottom:8px; }
+.skin-name { font-size:0.72rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; margin-bottom:2px; }
+.skin-desc { font-size:0.58rem; letter-spacing:0.06em; text-transform:uppercase; opacity:0.72; }
+
+/* mode cards */
+.mode-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; width:min(88vw,580px); }
+.mode-card { background:var(--card-bg); border:2px solid var(--card-border); border-radius:16px; padding:24px 20px 18px; cursor:pointer; text-align:center; transition:all 0.22s; }
+.mode-card:hover { border-color:var(--gold); transform:translateY(-3px); box-shadow:0 8px 24px rgba(160,120,32,0.18); }
+.mode-icon { font-size:2rem; margin-bottom:9px; }
+.mode-title { font-size:clamp(0.88rem,1.7vw,1.1rem); font-weight:800; color:var(--gold); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+.mode-desc { font-size:clamp(0.68rem,1.1vw,0.8rem); color:var(--text2); line-height:1.55; }
+.mode-badge { display:inline-block; margin-top:9px; padding:3px 10px; background:var(--bg3); border:1px solid var(--card-border); border-radius:12px; font-size:0.6rem; color:var(--text3); letter-spacing:0.06em; text-transform:uppercase; }
+
+/* style bar */
+.style-bar { position:fixed; bottom:22px; left:50%; transform:translateX(-50%); display:flex; gap:10px; background:rgba(0,0,0,0.5); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-radius:30px; padding:11px 20px; z-index:150; border:1px solid rgba(255,255,255,0.13); }
+.style-bar.hidden { display:none; }
+.style-dot { width:18px; height:18px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform 0.2s, border-color 0.2s, box-shadow 0.2s; flex-shrink:0; }
+.style-dot:hover { transform:scale(1.2); }
+.style-dot.active { border-color:#ffffff !important; transform:scale(1.3); box-shadow:0 0 6px rgba(255,255,255,0.5); }
+
+/* shared timer */
+.t-header { font-size:clamp(1.3rem,3vw,2.4rem); font-weight:900; color:var(--gold); letter-spacing:0.28em; text-transform:uppercase; text-align:center; margin-bottom:6px; }
+.t-sub { font-size:clamp(0.8rem,1.6vw,1.1rem); color:var(--text3); letter-spacing:0.15em; text-transform:uppercase; text-align:center; margin-bottom:16px; }
+.t-phase { font-size:clamp(1.3rem,3.2vw,2.6rem); color:var(--gold); font-weight:700; letter-spacing:0.1em; text-align:center; min-height:3rem; margin-bottom:8px; }
+.big-time {
+  font-size:clamp(5rem,20vw,15rem);
+  font-weight:900;
+  letter-spacing:0.04em;
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-family: var(--timer-font);
+  color: var(--timer-color);
+  text-shadow: var(--timer-glow);
+  transition:color 0.4s, text-shadow 0.4s, font-family 0.3s;
+  text-align:center;
+}
+.big-time.warn { color:var(--warn-color) !important; text-shadow:none !important; }
+.big-time.danger { color:#ff3a3a !important; text-shadow:none !important; animation:blink 0.9s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+/* skin-specific overrides */
+body.skin-serif .big-time { font-style:italic; }
+body.skin-stadium .big-time { font-size:clamp(5.5rem,22vw,17rem); letter-spacing:0.02em; }
+body.skin-military .big-time { letter-spacing:0.14em; }
+
+.progress-row { display:flex; gap:12px; margin:20px 0 6px; flex-wrap:wrap; justify-content:center; }
+.seg { height:18px; border-radius:9px; background:var(--seg-bg); border:2px solid var(--seg-border); transition:background 0.5s,border-color 0.5s; }
+.seg.active { background:var(--timer-color); border-color:var(--timer-color); }
+.seg.done { background:var(--green); border-color:var(--green2); }
+.seg-labels { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; justify-content:center; }
+.seg-lbl { text-align:center; font-size:clamp(0.72rem,1.4vw,1rem); color:var(--text3); line-height:1.5; }
+.seg-lbl.active { color:var(--timer-color); font-weight:700; }
+.seg-lbl.done { color:var(--green2); }
+
+.cp-msg { font-size:clamp(1rem,2.2vw,1.6rem); color:var(--text); min-height:2em; text-align:center; opacity:0; transition:opacity 0.5s; letter-spacing:0.04em; margin:8px 0; font-weight:600; }
+.cp-msg.show { opacity:1; }
+
+.controls { display:flex; gap:18px; margin-top:12px; flex-wrap:wrap; justify-content:center; }
+.btn { padding:clamp(13px,1.8vw,18px) clamp(28px,4.5vw,56px); font-size:clamp(0.9rem,1.7vw,1.2rem); border:none; border-radius:10px; cursor:pointer; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; transition:background 0.2s,transform 0.1s; }
+.btn:active { transform:scale(0.97); }
+.btn-gold { background:var(--gold); color:var(--bg); }
+.btn-gold:hover { background:var(--gold2); }
+.btn-blue { background:var(--bg3); color:var(--text2); border:2px solid var(--card-border); }
+.btn-blue:hover { border-color:var(--gold); color:var(--gold); }
+.btn-dim { background:var(--bg3); color:var(--text3); border:2px solid var(--card-border); }
+.btn-dim:hover { color:var(--text2); }
+.scr-footer { position:absolute; bottom:72px; font-size:0.82rem; color:var(--text3); letter-spacing:0.12em; text-transform:uppercase; text-align:center; opacity:0.6; }
+
+/* arc */
+.arc-wrap { position:relative; width:clamp(300px,52vw,500px); height:clamp(300px,52vw,500px); margin:0 auto 8px; }
+.arc-wrap svg { position:absolute; top:0;left:0; transform:rotate(-90deg); }
+.arc-bg { fill:none; stroke:var(--seg-bg); stroke-width:9; }
+.arc-fg { fill:none; stroke:var(--timer-color); stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset 1s linear,stroke 0.4s; }
+.arc-fg.warn { stroke:var(--warn-color); }
+.arc-fg.danger { stroke:#ff3a3a; }
+.arc-inner { position:absolute; top:50%;left:50%; transform:translate(-50%,-50%); text-align:center; width:100%; }
+
+/* question display */
+.q-box { background:var(--card-bg); border:2px solid var(--card-border); border-left:6px solid var(--gold); border-radius:16px; padding:clamp(28px,5vh,56px) clamp(24px,5vw,64px); width:min(92vw,1000px); text-align:center; margin:16px auto 0; min-height:clamp(160px,28vh,300px); display:flex; align-items:center; justify-content:center; transition:opacity 0.6s; box-shadow:0 4px 32px rgba(0,0,0,0.25); }
+.q-box.hidden { opacity:0; pointer-events:none; }
+.q-cat { font-size:clamp(0.75rem,1.4vw,1rem); color:var(--gold); text-transform:uppercase; letter-spacing:0.2em; font-weight:800; margin-bottom:16px; }
+.q-text { font-size:clamp(1.4rem,3.2vw,2.4rem); color:var(--text); font-style:italic; line-height:1.5; font-weight:500; }
+
+/* settings */
+.gear-btn { position:fixed; bottom:72px; right:20px; background:var(--card-bg); border:2px solid var(--card-border); border-radius:50%; width:58px; height:58px; font-size:1.5rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; color:var(--text2); z-index:200; }
+.gear-btn:hover { border-color:var(--gold); color:var(--gold); }
+.gear-btn.hidden { display:none; }
+.s-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:300; align-items:center; justify-content:center; }
+.s-overlay.open { display:flex; }
+.s-panel { background:var(--bg2); border:2px solid var(--card-border); border-radius:18px; padding:36px; max-width:540px; width:90%; max-height:80vh; overflow-y:auto; }
+.s-title { font-size:1.3rem; font-weight:800; color:var(--gold); letter-spacing:0.15em; text-transform:uppercase; margin-bottom:6px; }
+.s-desc { font-size:0.92rem; color:var(--text3); margin-bottom:22px; line-height:1.6; }
+.t-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid var(--card-border); }
+.t-row:last-of-type { border-bottom:none; }
+.t-name { font-size:1rem; color:var(--text); font-weight:600; }
+.t-sub-sm { font-size:0.82rem; color:var(--text3); margin-top:3px; }
+.sw { position:relative; width:42px; height:23px; flex-shrink:0; }
+.sw input { opacity:0; width:0; height:0; }
+.sw-sl { position:absolute; inset:0; background:var(--seg-bg); border-radius:12px; cursor:pointer; transition:background 0.3s; border:2px solid var(--card-border); }
+.sw-sl::before { content:''; position:absolute; width:15px;height:15px; left:2px;top:2px; background:var(--text3); border-radius:50%; transition:transform 0.3s,background 0.3s; }
+.sw input:checked + .sw-sl { background:var(--gold); border-color:var(--gold); }
+.sw input:checked + .sw-sl::before { transform:translateX(19px); background:var(--bg); }
+
+/* sliders */
+.slider-wrap { width:min(88vw,580px); margin:10px auto 4px; }
+.slider-row { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+.slider-label { font-size:clamp(0.8rem,1.5vw,1rem); color:var(--text3); font-weight:600; letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; min-width:110px; }
+.slider-val { font-size:clamp(0.95rem,1.8vw,1.2rem); color:var(--gold); font-weight:800; min-width:72px; text-align:right; white-space:nowrap; }
+input[type=range] { flex:1; -webkit-appearance:none; appearance:none; height:10px; border-radius:5px; background:var(--seg-bg); border:2px solid var(--seg-border); outline:none; cursor:pointer; }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:26px; height:26px; border-radius:50%; background:var(--gold); border:3px solid var(--bg2); cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,0.25); transition:transform 0.15s; }
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
+input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%; background:var(--gold); border:3px solid var(--bg2); cursor:pointer; }
+.slider-wrap.hidden { display:none; }
+
+/* coach mode layout */
+.write-layout { display:flex; flex-direction:column; align-items:center; width:100%; }
+.write-layout.coach { flex-direction:row; align-items:flex-start; gap:clamp(20px,3.5vw,48px); justify-content:center; max-width:min(96vw,1400px); flex-wrap:wrap; }
+.write-left { display:flex; flex-direction:column; align-items:center; }
+.write-right { display:none; flex-direction:column; justify-content:center; min-width:320px; flex:1; max-width:640px; }
+.write-right.show { display:flex; }
+.write-layout.coach .arc-wrap { width:clamp(220px,28vw,380px); height:clamp(220px,28vw,380px); }
+.write-layout.coach #writeTime { font-size:clamp(3rem,7.5vw,5.5rem) !important; }
+.tip-card { background:var(--card-bg); border:2px solid var(--card-border); border-left:8px solid var(--gold); border-radius:18px; padding:clamp(22px,3vw,36px) clamp(20px,3vw,32px); }
+.tip-label { font-size:clamp(1rem,1.8vw,1.5rem); color:var(--gold); text-transform:uppercase; letter-spacing:0.2em; font-weight:800; margin-bottom:18px; }
+.tip-item { font-size:clamp(1.15rem,2vw,1.65rem); color:var(--text); line-height:1.65; padding:14px 0; border-bottom:1px solid var(--card-border); }
+.tip-item:last-child { border-bottom:none; padding-bottom:0; }
+.tip-item::before { content:'→ '; color:var(--gold); font-weight:700; }
+.s-section-sep { font-size:0.72rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.2em; font-weight:700; margin:18px 0 4px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="back-btn" id="backBtn" onclick="goMenu()" style="visibility:hidden">← Menu</button>
+  <button class="theme-toggle" id="themBtn" onclick="toggleTheme()">🌙 Dark</button>
+</div>
+
+<!-- MENU -->
+<div class="screen active" id="menuScreen">
+  <div class="menu-title">IB History</div>
+  <div class="menu-sub">Examination Timer Suite &nbsp;·&nbsp; Higher Level</div>
+  <div class="section-label" style="margin-top:32px">Choose Your Timer</div>
+  <div class="mode-grid">
+    <div class="mode-card" onclick="launchP3()">
+      <div class="mode-icon">📜</div>
+      <div class="mode-title">Paper 3 Exam</div>
+      <div class="mode-desc">Full HL examination with three essays, phase-boundary checkpoints, and adjustable time.</div>
+      <div class="mode-badge">2h 30m · 3 Essays · 15pts each</div>
+    </div>
+    <div class="mode-card" onclick="launchEssay()">
+      <div class="mode-icon">✍️</div>
+      <div class="mode-title">Single Essay</div>
+      <div class="mode-desc">Guided reading with historical thinking prompts, then timed writing with structural checkpoints.</div>
+      <div class="mode-badge">Adjustable · Read + Write</div>
+    </div>
+  </div>
+</div>
+
+<!-- PAPER 3 -->
+<div class="screen" id="p3Screen">
+  <div class="t-header" id="t-header-p3">IB History — Paper 3</div>
+  <div class="t-sub" id="p3Sub">Higher Level &nbsp;·&nbsp; 3 Essays &nbsp;·&nbsp; 150 Minutes</div>
+  <div class="t-phase" id="p3Phase">Press Start to Begin</div>
+  <div class="big-time" id="p3Time">2:30:00</div>
+  <div class="slider-wrap" id="p3SliderWrap">
+    <div class="slider-row">
+      <span class="slider-label">Exam Time</span>
+      <input type="range" id="p3Slider" min="60" max="180" step="5" value="150" oninput="p3SliderChange(this.value)">
+      <span class="slider-val" id="p3SliderVal">2h 30m</span>
+    </div>
+  </div>
+  <div class="progress-row" id="p3Segs"></div>
+  <div class="seg-labels" id="p3Lbls"></div>
+  <div class="cp-msg" id="p3Cp"></div>
+  <div class="controls">
+    <button class="btn btn-gold" id="p3Start" onclick="p3Go()">Start</button>
+    <button class="btn btn-blue" id="p3Pause" onclick="p3Stop()" style="display:none">Pause</button>
+    <button class="btn btn-dim" onclick="p3Reset()">Reset</button>
+  </div>
+  <div class="scr-footer">~50 min per essay recommended &nbsp;·&nbsp; 15 marks each</div>
+</div>
+
+<!-- SINGLE ESSAY -->
+<div class="screen" id="essayScreen">
+  <div class="t-header" id="eHeader">IB History — Essay Practice</div>
+  <div class="t-sub" id="eSub">Reading &amp; Planning &nbsp;·&nbsp; 5 Minutes</div>
+  <div class="t-phase" id="ePhase">Press Start to Begin</div>
+  <div class="slider-wrap" id="eSliderWrap">
+    <div class="slider-row">
+      <span class="slider-label">Reading</span>
+      <input type="range" id="eReadSlider" min="0" max="15" step="1" value="5" oninput="eSliderChange()">
+      <span class="slider-val" id="eReadVal">5 min</span>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">Writing</span>
+      <input type="range" id="eWriteSlider" min="5" max="60" step="1" value="45" oninput="eSliderChange()">
+      <span class="slider-val" id="eWriteVal">45 min</span>
+    </div>
+  </div>
+  <div id="readView" style="display:flex;flex-direction:column;align-items:center;width:100%;">
+    <div class="big-time" id="readTime" style="font-size:clamp(3.5rem,10vw,8rem);margin-bottom:8px;">5:00</div>
+    <div class="q-box hidden" id="qBox">
+      <div style="width:100%">
+        <div class="q-cat" id="qCat">Causation</div>
+        <div class="q-text" id="qText">What were the short, medium, and long-term causes?</div>
+      </div>
+    </div>
+  </div>
+  <div id="writeView" style="display:none">
+    <div class="write-layout" id="writeLayout">
+      <div class="write-left">
+        <div class="arc-wrap">
+          <svg viewBox="0 0 100 100" width="100%" height="100%">
+            <circle class="arc-bg" cx="50" cy="50" r="44"/>
+            <circle class="arc-fg" id="arcFg" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"/>
+          </svg>
+          <div class="arc-inner">
+            <div class="big-time" style="font-size:clamp(4rem,10vw,7rem)" id="writeTime">45:00</div>
+          </div>
+        </div>
+        <div class="progress-row" id="eSegs"></div>
+        <div class="seg-labels" id="eLbls"></div>
+      </div>
+      <div class="write-right" id="writeRight">
+        <div class="tip-card">
+          <div class="tip-label" id="tipLabel">Context</div>
+          <div id="tipList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cp-msg" id="eCp"></div>
+  <div class="controls">
+    <button class="btn btn-gold" id="eStart" onclick="essayGo()">Start</button>
+    <button class="btn btn-blue" id="ePause" onclick="essayStop()" style="display:none">Pause</button>
+    <button class="btn btn-dim" onclick="essayReset()">Reset</button>
+  </div>
+</div>
+
+<button class="gear-btn hidden" id="quickBtn" onclick="quickWrite()" title="Quick 45-min sprint" style="bottom:140px;font-size:0.95rem;font-weight:900;flex-direction:column;gap:1px;line-height:1">
+  <span>▶</span><span style="font-size:0.58rem;letter-spacing:0.05em;margin-top:2px">45m</span>
+</button>
+<button class="gear-btn hidden" id="gearBtn" onclick="openS()">⚙️</button>
+<div class="style-bar" id="styleBar"></div>
+
+<div class="s-overlay" id="sOverlay" onclick="if(event.target===this)closeS()">
+  <div class="s-panel">
+    <div class="s-title">Essay Settings</div>
+    <div class="s-desc">Customize writing tips and reading prompts.</div>
+    <div class="t-row">
+      <div>
+        <div class="t-name">Writing Coach</div>
+        <div class="t-sub-sm">Show section tips alongside the writing timer</div>
+      </div>
+      <label class="sw"><input type="checkbox" id="coachToggle" onchange="toggleCoach(this.checked)"><span class="sw-sl"></span></label>
+    </div>
+    <div class="t-row">
+      <div>
+        <div class="t-name">HL Paper 3 Language</div>
+        <div class="t-sub-sm">Swap tips for rubric-aligned IB language — AOs, command terms, Band 5 descriptors</div>
+      </div>
+      <label class="sw"><input type="checkbox" id="ibToggle" onchange="toggleIbMode(this.checked)"><span class="sw-sl"></span></label>
+    </div>
+    <div class="s-section-sep">Reading Prompts</div>
+    <div id="toggleList"></div>
+    <div style="margin-top:18px;text-align:right">
+      <button class="btn btn-gold" onclick="closeS()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── THEME ──────────────────────────────────────────────
+let light = true;
+function toggleTheme() {
+  light = !light;
+  document.documentElement.classList.toggle('dark', !light);
+  document.getElementById('themBtn').textContent = light ? '🌙 Dark' : '☀️ Light';
+  // re-apply skin so timer-color stays correct
+  setSkin(activeSkin);
+}
+
+// ── SKINS ──────────────────────────────────────────────
+const SKINS = [
+  {
+    id:'official', name:'Official', desc:'IB standard',
+    light:{ '--timer-color':'#a07820', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#d4940a' },
+    dark: { '--timer-color':'#c9a84c', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#e07820' },
+    prev:{ bg:'#0a1628', text:'#c9a84c' }
+  },
+  {
+    id:'clean', name:'Clean', desc:'Minimal & airy',
+    light:{ '--timer-color':'#1a2a4a', '--timer-font':"'Segoe UI',Arial,sans-serif", '--timer-glow':'none', '--warn-color':'#e07820' },
+    dark: { '--timer-color':'#c8d8f0', '--timer-font':"'Segoe UI',Arial,sans-serif", '--timer-glow':'none', '--warn-color':'#e07820' },
+    prev:{ bg:'#f0f4fc', text:'#1a2a4a' }
+  },
+  {
+    id:'chalk', name:'Chalk', desc:'Chalkboard',
+    light:{ '--timer-color':'#f0ead8', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#f0c040' },
+    dark: { '--timer-color':'#f0ead8', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#f0c040' },
+    prev:{ bg:'#1e3a1e', text:'#f0ead8' }
+  },
+  {
+    id:'terminal', name:'Terminal', desc:'Phosphor glow',
+    light:{ '--timer-color':'#00c030', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 12px #00c030,0 0 32px #007020', '--warn-color':'#cccc00' },
+    dark: { '--timer-color':'#00ff41', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 16px #00ff41,0 0 44px #009922', '--warn-color':'#ffcc00' },
+    prev:{ bg:'#050f05', text:'#00ff41' }
+  },
+  {
+    id:'serif', name:'Serif', desc:'Parchment & ink',
+    light:{ '--timer-color':'#3a2a15', '--timer-font':'Georgia,serif', '--timer-glow':'none', '--warn-color':'#c04010' },
+    dark: { '--timer-color':'#d4b896', '--timer-font':'Georgia,serif', '--timer-glow':'none', '--warn-color':'#cc5020' },
+    prev:{ bg:'#f5ede0', text:'#3a2a15' }, prevStyle:'font-style:italic'
+  },
+  {
+    id:'stadium', name:'Stadium', desc:'Scoreboard bold',
+    light:{ '--timer-color':'#f5c518', '--timer-font':"Impact,'Arial Narrow',Arial,sans-serif", '--timer-glow':'none', '--warn-color':'#ff6600' },
+    dark: { '--timer-color':'#f5c518', '--timer-font':"Impact,'Arial Narrow',Arial,sans-serif", '--timer-glow':'none', '--warn-color':'#ff6600' },
+    prev:{ bg:'#000000', text:'#f5c518' }
+  },
+  {
+    id:'blueprint', name:'Blueprint', desc:'Technical draft',
+    light:{ '--timer-color':'#0088bb', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 8px #0088bb,0 0 20px #004488', '--warn-color':'#ff9900' },
+    dark: { '--timer-color':'#00cfff', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 14px #00cfff,0 0 32px #0088aa', '--warn-color':'#ff9900' },
+    prev:{ bg:'#081428', text:'#00cfff' }
+  },
+  {
+    id:'neon', name:'Neon', desc:'Night sign glow',
+    light:{ '--timer-color':'#cc0055', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 10px #cc0055,0 0 28px #880033', '--warn-color':'#ff9900' },
+    dark: { '--timer-color':'#ff2d78', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'0 0 18px #ff2d78,0 0 44px #cc0055,0 0 88px #880033', '--warn-color':'#ffaa00' },
+    prev:{ bg:'#100818', text:'#ff2d78' }
+  },
+  {
+    id:'military', name:'Military', desc:'Field stencil',
+    light:{ '--timer-color':'#8a5a08', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#cc3300' },
+    dark: { '--timer-color':'#d48a10', '--timer-font':"'Courier New','Lucida Console',monospace", '--timer-glow':'none', '--warn-color':'#ff4400' },
+    prev:{ bg:'#1e2a0a', text:'#d48a10' }
+  },
+  {
+    id:'newspaper', name:'Newspaper', desc:'Print edition',
+    light:{ '--timer-color':'#111111', '--timer-font':"Georgia,'Times New Roman',serif", '--timer-glow':'none', '--warn-color':'#cc0000' },
+    dark: { '--timer-color':'#e8e0d0', '--timer-font':"Georgia,'Times New Roman',serif", '--timer-glow':'none', '--warn-color':'#ff4444' },
+    prev:{ bg:'#f8f6f0', text:'#111111' }
+  },
+];
+
+let activeSkin = 0;
+
+function setSkin(idx) {
+  activeSkin = idx;
+  const s = SKINS[idx];
+  const vars = light ? s.light : s.dark;
+  const root = document.documentElement;
+  Object.entries(vars).forEach(([k,v]) => root.style.setProperty(k, v));
+  document.body.className = 'skin-' + s.id;
+  document.querySelectorAll('.skin-card').forEach((c,i) => c.classList.toggle('active', i===idx));
+  document.querySelectorAll('.style-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+  localStorage.setItem('ib-skin', idx);
+}
+
+function buildSkinGrid() {
+  const grid = document.getElementById('skinGrid');
+  grid.innerHTML = '';
+  SKINS.forEach((s, i) => {
+    const card = document.createElement('div');
+    card.className = 'skin-card';
+    card.id = 'skinCard' + i;
+    card.style.background = s.prev.bg;
+    card.onclick = () => setSkin(i);
+    const glow = s.dark['--timer-glow'] || 'none';
+    const ps = s.prevStyle || '';
+    card.innerHTML =
+      `<div class="skin-prev-time" style="font-family:${s.dark['--timer-font']};color:${s.prev.text};text-shadow:${glow};${ps}">2:30</div>` +
+      `<div class="skin-name" style="color:${s.prev.text};opacity:0.9">${s.name}</div>` +
+      `<div class="skin-desc" style="color:${s.prev.text}">${s.desc}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function buildStyleBar() {
+  const bar = document.getElementById('styleBar');
+  bar.innerHTML = '';
+  SKINS.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'style-dot';
+    dot.id = 'styleDot' + i;
+    dot.style.background = s.prev.bg;
+    dot.style.borderColor = s.prev.text;
+    dot.onclick = () => setSkin(i);
+    dot.title = s.name;
+    bar.appendChild(dot);
+  });
+}
+
+// ── NAV ────────────────────────────────────────────────
+function launchP3() {
+  p3NumEssays = 3;
+  document.getElementById('p3Slider').min = 60;
+  document.getElementById('p3Slider').max = 180;
+  document.getElementById('p3Slider').value = 150;
+  p3Reset();
+  document.getElementById('t-header-p3').textContent = 'IB History — Paper 3';
+  show('p3Screen');
+}
+
+function launchEssay() {
+  document.getElementById('eReadSlider').value = 5;
+  document.getElementById('eWriteSlider').value = 45;
+  Object.keys(qCats).forEach(k => qCats[k] = true);
+  document.querySelectorAll('#toggleList input[type=checkbox]').forEach(cb => { cb.checked = true; });
+  essayReset();
+  eSliderChange();
+  document.getElementById('eHeader').textContent = 'IB History — Essay Practice';
+  show('essayScreen');
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('backBtn').style.visibility = id === 'menuScreen' ? 'hidden' : 'visible';
+  document.getElementById('gearBtn').classList.toggle('hidden', id !== 'essayScreen');
+  document.getElementById('quickBtn').classList.toggle('hidden', id !== 'essayScreen');
+  document.getElementById('styleBar').classList.remove('hidden');
+}
+function goMenu() { p3Reset(); essayReset(); show('menuScreen'); }
+
+// ── UTILS ──────────────────────────────────────────────
+function hms(s) { const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60; return `${h}:${pad(m)}:${pad(sc)}`; }
+function ms(s){ return `${Math.floor(s/60)}:${pad(s%60)}`; }
+function pad(n){ return String(n).padStart(2,'0'); }
+function flash(id,msg,dur=8000){
+  const el=document.getElementById(id);
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+// ── PAPER 3 ────────────────────────────────────────────
+let p3TotSec=9000, p3r=9000, p3run=false, p3iv=null, p3NumEssays=3;
+const p3f=new Set();
+
+function p3Marks(tot, n){
+  const marks={ 600:'⚠️ 10 minutes remaining — start wrapping up', 300:'🔴 5 minutes remaining', 0:"🛑 Time's up — pens down!" };
+  for(let i=1;i<n;i++){
+    const rem=Math.round(tot*(n-i)/n), elapsed=Math.round(tot*i/n/60);
+    marks[rem]=`⏱ ${elapsed} min elapsed — move to Essay ${i+1}`;
+  }
+  return marks;
+}
+
+function p3RebuildSegs(n){
+  const sr=document.getElementById('p3Segs'), lb=document.getElementById('p3Lbls');
+  sr.innerHTML=''; lb.innerHTML='';
+  const w=n===2?'clamp(110px,19vw,280px)':'clamp(90px,14vw,220px)';
+  for(let i=1;i<=n;i++){
+    const s=document.createElement('div'); s.className='seg'; s.style.width=w; s.id='p3s'+i; sr.appendChild(s);
+    const l=document.createElement('div'); l.className='seg-lbl'; l.style.width=w; l.id='p3l'+i; lb.appendChild(l);
+  }
+}
+
+function p3SliderChange(val){
+  p3TotSec=val*60; p3r=p3TotSec;
+  const h=Math.floor(p3TotSec/3600), m=Math.floor((p3TotSec%3600)/60);
+  document.getElementById('p3SliderVal').textContent = h>0 ? `${h}h ${m}m` : `${m} min`;
+  document.getElementById('p3Time').textContent=hms(p3TotSec);
+  document.getElementById('p3Sub').textContent=`Higher Level · ${p3NumEssays} Essays · ${val} Minutes`;
+  const perMin=Math.round(val/p3NumEssays);
+  const fmt=n=>{ const hh=Math.floor(n/60), mm=n%60; return hh>0?`${hh}:${pad(mm)}`:`${mm}:00`; };
+  for(let i=1;i<=p3NumEssays;i++){
+    const start=fmt((i-1)*perMin), end=fmt(i*perMin);
+    const el=document.getElementById('p3l'+i);
+    if(el) el.innerHTML=`Essay ${i}<br><span style="font-size:0.65em;opacity:0.7">${start}–${end}</span>`;
+  }
+}
+
+p3RebuildSegs(3);
+p3SliderChange(150);
+
+function p3ph(r){ const elapsed=p3TotSec-r, perSec=p3TotSec/p3NumEssays; return Math.min(p3NumEssays, Math.floor(elapsed/perSec)+1); }
+function p3ui(){
+  const p=p3ph(p3r);
+  document.getElementById('p3Time').textContent=hms(p3r);
+  document.getElementById('p3Time').className='big-time'+(p3r<=300?' danger':p3r<=600?' warn':'');
+  if(p3run||p3r<p3TotSec) document.getElementById('p3Phase').textContent=`Essay ${p} of ${p3NumEssays}`;
+  for(let i=1;i<=p3NumEssays;i++){
+    document.getElementById('p3s'+i).className='seg'+(i<p?' done':i===p?' active':'');
+    document.getElementById('p3l'+i).className='seg-lbl'+(i<p?' done':i===p?' active':'');
+  }
+  const marks=p3Marks(p3TotSec,p3NumEssays);
+  if(marks[p3r]!==undefined&&!p3f.has(p3r)){ p3f.add(p3r); flash('p3Cp',marks[p3r]); }
+}
+function p3Go(){
+  if(p3run)return; p3run=true;
+  document.getElementById('p3SliderWrap').classList.add('hidden');
+  document.getElementById('p3Start').style.display='none';
+  document.getElementById('p3Pause').style.display='inline-block';
+  p3iv=setInterval(()=>{ if(p3r<=0){clearInterval(p3iv);p3run=false;p3end();return;} p3r--;p3ui(); },1000);
+}
+function p3Stop(){
+  clearInterval(p3iv);p3run=false;
+  document.getElementById('p3Pause').style.display='none';
+  document.getElementById('p3Start').style.display='inline-block';
+  document.getElementById('p3Start').textContent='Resume';
+  document.getElementById('p3Phase').textContent=`Paused — Essay ${p3ph(p3r)} of ${p3NumEssays}`;
+}
+function p3end(){
+  document.getElementById('p3Phase').textContent="Time's Up";
+  document.getElementById('p3Pause').style.display='none';
+  document.getElementById('p3Start').style.display='inline-block';
+  document.getElementById('p3Start').textContent='Done';
+}
+function p3Reset(){
+  clearInterval(p3iv);p3run=false;p3f.clear();
+  document.getElementById('p3Start').style.display='inline-block';
+  document.getElementById('p3Start').textContent='Start';
+  document.getElementById('p3Pause').style.display='none';
+  document.getElementById('p3Phase').textContent='Press Start to Begin';
+  document.getElementById('p3Time').className='big-time';
+  document.getElementById('p3Cp').classList.remove('show');
+  document.getElementById('p3SliderWrap').classList.remove('hidden');
+  p3RebuildSegs(p3NumEssays);
+  p3SliderChange(parseInt(document.getElementById('p3Slider').value));
+}
+
+// ── SINGLE ESSAY ───────────────────────────────────────
+const CIRC=276.46;
+let rTotSec=300, wTotSec=2700;
+let eph='idle', er=300, erun=false, eiv=null;
+const ef=new Set();
+
+function eSliderChange(){
+  rTotSec=parseInt(document.getElementById('eReadSlider').value)*60;
+  wTotSec=parseInt(document.getElementById('eWriteSlider').value)*60;
+  document.getElementById('eReadVal').textContent=(rTotSec/60)+' min';
+  document.getElementById('eWriteVal').textContent=(wTotSec/60)+' min';
+  if(eph==='idle'){
+    er=rTotSec;
+    document.getElementById('readTime').textContent=ms(rTotSec);
+    document.getElementById('writeTime').textContent=ms(wTotSec);
+    document.getElementById('eSub').textContent=`Reading & Planning · ${rTotSec/60} Minutes`;
+  }
+}
+
+function buildWCP(wtot){
+  const t=wtot, w3=Math.max(0,t-180);
+  return [
+    [0,                   '✍️ Begin your introduction — set the historical context.', 0],
+    [Math.round(t*0.111), 'Move to your thesis — state your argument clearly.',      1],
+    [Math.round(t*0.178), 'Begin Body Paragraph 1 — your strongest line.',           2],
+    [Math.round(t*0.400), 'Begin Body Paragraph 2 — develop a second argument.',     3],
+    [Math.round(t*0.622), 'Begin Body Paragraph 3 — your final analytical point.',   4],
+    [Math.round(t*0.822), "Begin your conclusion — synthesize, don't repeat.",        5],
+    [w3,                  '🔴 3 minutes remaining — finish up.',                     null],
+    [t,                   "🛑 Time's up — pens down!",                              null]
+  ];
+}
+
+function wSec(el){
+  const t=wTotSec;
+  if(el>=Math.round(t*0.822))return 5;
+  if(el>=Math.round(t*0.622))return 4;
+  if(el>=Math.round(t*0.400))return 3;
+  if(el>=Math.round(t*0.178))return 2;
+  if(el>=Math.round(t*0.111))return 1;
+  return 0;
+}
+
+const ESECS=['Context','Thesis','Body ¶1','Body ¶2','Body ¶3','Conclusion'];
+const ESEC_FRACS=[0, 0.111, 0.178, 0.400, 0.622, 0.822];
+
+function jumpToSection(i) {
+  if (eph !== 'writing') return;
+  const newElapsed = Math.round(wTotSec * ESEC_FRACS[i]);
+  er = wTotSec - newElapsed;
+  buildWCP(wTotSec).forEach(([at]) => { if (at >= newElapsed) ef.delete(at); });
+  lastTipSection = -1;
+  eui();
+}
+
+(function(){
+  const sr=document.getElementById('eSegs'),lb=document.getElementById('eLbls');
+  ESECS.forEach((n,i)=>{
+    const s=document.createElement('div'); s.className='seg'; s.style.width='clamp(50px,9vw,110px)'; s.style.cursor='pointer'; s.id='es'+i;
+    s.onclick=()=>jumpToSection(i); sr.appendChild(s);
+    const l=document.createElement('div'); l.className='seg-lbl'; l.style.width='clamp(50px,9vw,110px)'; l.style.cursor='pointer'; l.id='el'+i; l.textContent=n;
+    l.onclick=()=>jumpToSection(i); lb.appendChild(l);
+  });
+})();
+
+function eui(){
+  if(eph==='reading'){
+    document.getElementById('readTime').textContent=ms(er);
+    document.getElementById('readTime').className='big-time'+(er<=30?' danger':er<=60?' warn':'');
+  } else if(eph==='writing'){
+    const el=wTotSec-er;
+    document.getElementById('writeTime').textContent=ms(er);
+    document.getElementById('writeTime').className='big-time'+(er<=180?' danger':er<=300?' warn':'');
+    const pct=er/wTotSec;
+    document.getElementById('arcFg').style.strokeDashoffset=CIRC*pct;
+    document.getElementById('arcFg').className='arc-fg'+(er<=180?' danger':er<=300?' warn':'');
+    const si=wSec(el);
+    updateTips(si);
+    for(let i=0;i<6;i++){
+      document.getElementById('es'+i).className='seg'+(i<si?' done':i===si?' active':'');
+      document.getElementById('el'+i).className='seg-lbl'+(i<si?' done':i===si?' active':'');
+    }
+    buildWCP(wTotSec).forEach(([at,msg])=>{ if(el>=at&&!ef.has(at)){ ef.add(at); if(msg)flash('eCp',msg); } });
+  }
+}
+
+function essayGo(){
+  if(erun)return; erun=true;
+  document.getElementById('eStart').style.display='none';
+  document.getElementById('ePause').style.display='inline-block';
+  if(eph==='idle'){
+    document.getElementById('eSliderWrap').classList.add('hidden');
+    if(rTotSec===0){
+      eph='writing'; er=wTotSec;
+      document.getElementById('ePhase').textContent='';
+      document.getElementById('eSub').textContent=`Writing Phase · ${wTotSec/60} Minutes`;
+      document.getElementById('readView').style.display='none';
+      document.getElementById('writeView').style.display='block';
+      flash('eCp','✍️ Begin writing — no reading phase.');
+      eiv=setInterval(()=>{ er--; eui(); if(er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
+      return;
+    }
+    eph='reading'; er=rTotSec;
+    document.getElementById('ePhase').textContent='Reading & Planning';
+    document.getElementById('eSub').textContent=`Reading & Planning · ${rTotSec/60} Minutes`;
+    if(qEnabled()) { document.getElementById('qBox').classList.remove('hidden'); startQ(); }
+  }
+  eiv=setInterval(()=>{ er--; eui(); if(eph==='reading'&&er<=0)toWrite(); else if(eph==='writing'&&er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
+}
+
+function toWrite(){
+  clearInterval(eiv); stopQ();
+  eph='writing'; er=wTotSec;
+  document.getElementById('ePhase').textContent='';
+  document.getElementById('eSub').textContent=`Writing Phase · ${wTotSec/60} Minutes`;
+  document.getElementById('readView').style.display='none';
+  document.getElementById('writeView').style.display='block';
+  flash('eCp','✍️ Reading time complete — begin writing your context.');
+  eiv=setInterval(()=>{ er--; eui(); if(er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
+}
+
+function essayStop(){
+  clearInterval(eiv);erun=false;stopQ();
+  document.getElementById('ePause').style.display='none';
+  document.getElementById('eStart').style.display='inline-block';
+  document.getElementById('eStart').textContent='Resume';
+  document.getElementById('ePhase').textContent=eph==='reading'?'Paused — Reading':'Paused — Writing';
+}
+
+function eDone(){
+  document.getElementById('ePhase').textContent="Time's Up";
+  document.getElementById('ePause').style.display='none';
+  document.getElementById('eStart').style.display='inline-block';
+  document.getElementById('eStart').textContent='Done';
+}
+
+function essayReset(){
+  clearInterval(eiv);stopQ();erun=false;eph='idle';er=rTotSec;ef.clear();lastTipSection=-1;
+  document.getElementById('eStart').style.display='inline-block';
+  document.getElementById('eStart').textContent='Start';
+  document.getElementById('ePause').style.display='none';
+  document.getElementById('ePhase').textContent='Press Start to Begin';
+  document.getElementById('eSub').textContent=`Reading & Planning · ${rTotSec/60} Minutes`;
+  document.getElementById('eHeader').textContent='IB History — Essay Practice';
+  document.getElementById('readTime').textContent=ms(rTotSec);
+  document.getElementById('readTime').className='big-time';
+  document.getElementById('writeTime').textContent=ms(wTotSec);
+  document.getElementById('writeTime').className='big-time';
+  document.getElementById('eCp').classList.remove('show');
+  document.getElementById('qBox').classList.add('hidden');
+  document.getElementById('arcFg').style.strokeDashoffset=0;
+  document.getElementById('arcFg').className='arc-fg';
+  document.getElementById('readView').style.display= rTotSec>0 ? 'flex' : 'none';
+  document.getElementById('writeView').style.display= rTotSec>0 ? 'none' : 'block';
+  document.getElementById('eSliderWrap').classList.remove('hidden');
+  for(let i=0;i<6;i++){
+    document.getElementById('es'+i).className='seg';
+    document.getElementById('el'+i).className='seg-lbl';
+  }
+}
+
+// ── QUESTION ROTATION ─────────────────────────────────
+const QB={
+  'Causation':[
+    'What were the short, medium, and long-term causes of this event?',
+    'Which single cause was most significant — and why?',
+    'How did structural conditions make this outcome likely or inevitable?',
+  ],
+  'Consequence':[
+    'What were the intended and unintended consequences?',
+    'Who bore the greatest consequences, and why?',
+    'How did this event reshape the political, social, or economic order?',
+  ],
+  'Change & Continuity':[
+    'What changed? What stayed the same — and why did continuity persist?',
+    'Was this a genuine turning point, or part of a longer trend?',
+    'How did continuity limit or complicate the impact of change?',
+  ],
+  'Significance':[
+    'Why does this event matter to historians today?',
+    'Was the significance short-term, long-term, or both?',
+    'How did contemporaries understand it differently from later historians?',
+  ],
+  'Perspective':[
+    'Whose perspectives are missing from the dominant narrative?',
+    'How would different groups — by class, nation, gender — experience this differently?',
+    'What does the absence of certain voices tell us about historical memory?',
+  ],
+  'Historiography':[
+    'What have historians argued about this? Are there competing schools of thought?',
+    'Has the historical interpretation changed over time — and why?',
+    "Which historian's argument will you engage with, and do you agree?",
+  ],
+  'Thesis Prep':[
+    'Can you state your core argument in a single sentence?',
+    'What specific evidence will you use — and how reliable is it?',
+    'What is the strongest counterargument to your thesis?',
+  ],
+};
+
+let qCats={}; Object.keys(QB).forEach(k=>qCats[k]=true);
+let qPool=[],qIdx=0,qIv=null;
+
+function qEnabled(){ return Object.values(qCats).some(v=>v); }
+function buildPool(){
+  qPool=[];
+  Object.entries(QB).forEach(([cat,qs])=>{ if(qCats[cat]) qs.forEach(q=>qPool.push({cat,q})); });
+  for(let i=qPool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qPool[i],qPool[j]]=[qPool[j],qPool[i]]; }
+  qIdx=0;
+}
+function showQ(){
+  if(!qPool.length)return;
+  const item=qPool[qIdx%qPool.length]; qIdx++;
+  const box=document.getElementById('qBox');
+  box.style.opacity='0';
+  setTimeout(()=>{ document.getElementById('qCat').textContent=item.cat; document.getElementById('qText').textContent=item.q; box.style.opacity='1'; },420);
+}
+function startQ(){ if(!qEnabled())return; buildPool(); showQ(); qIv=setInterval(showQ,18000); }
+function stopQ(){ clearInterval(qIv); qIv=null; }
+
+(function(){
+  const list=document.getElementById('toggleList');
+  Object.entries(QB).forEach(([cat,qs])=>{
+    const row=document.createElement('div'); row.className='t-row';
+    row.innerHTML=`<div><div class="t-name">${cat}</div><div class="t-sub-sm">${qs.length} prompt${qs.length>1?'s':''}</div></div><label class="sw"><input type="checkbox" checked onchange="toggleCat('${cat}',this.checked)"><span class="sw-sl"></span></label>`;
+    list.appendChild(row);
+  });
+})();
+
+function toggleCat(cat,val){
+  qCats[cat]=val;
+  if(eph==='reading'&&erun){ buildPool(); showQ(); if(!qEnabled())document.getElementById('qBox').classList.add('hidden'); else document.getElementById('qBox').classList.remove('hidden'); }
+}
+function quickWrite() {
+  document.getElementById('eReadSlider').value = 0;
+  document.getElementById('eWriteSlider').value = 45;
+  eSliderChange();
+  essayReset();
+  essayGo();
+}
+function openS(){ document.getElementById('sOverlay').classList.add('open'); }
+function closeS(){ document.getElementById('sOverlay').classList.remove('open'); }
+
+// ── WRITING COACH ─────────────────────────────────────
+const WRITE_TIPS = {
+  'Context': [
+    "Set the scene in 3–5 sentences — name the era, key actors, and the forces already in motion. Context is the frame, not the painting.",
+    "You are establishing conditions, not telling a story. Think: what background does the reader need to understand your argument?",
+    "Flow naturally into your thesis — every sentence in your intro should point toward your argument."
+  ],
+  'Thesis': [
+    "State your position in one clear, debatable sentence. Don't say what you will do — say what you think.",
+    "Hint at all three body paragraph arguments. A reader should be able to predict your essay structure from your thesis alone.",
+    "A strong thesis takes a real position that a historian could reasonably disagree with. Commit to it."
+  ],
+  'Body ¶1': [
+    "Open with a topic sentence that takes a position — it should answer the question, not just introduce a topic.",
+    "Every piece of evidence must be analyzed, not just described. After each fact, ask: so what? What does this prove?",
+    "Close by linking this paragraph's argument back to your thesis. The connection should be explicit."
+  ],
+  'Body ¶2': [
+    "Develop a second angle — examine a different dimension: social, economic, ideological, or a different time period.",
+    "Acknowledge a counterargument here, then address it. Showing you've considered the other side makes your case stronger.",
+    "Bring in a different type of evidence to show the examiner the breadth of your historical knowledge."
+  ],
+  'Body ¶3': [
+    "This is your deepest paragraph — push beyond events into significance, long-term impact, or historiographical debate.",
+    "If you can name a historian and engage with their argument, this is the place to do it. Engage — don't just name-drop.",
+    "End this paragraph by linking explicitly back to your thesis. Show how this argument adds to your overall case."
+  ],
+  'Conclusion': [
+    "Synthesize, don't summarize. Show how your three arguments together build a stronger case than any one argument alone.",
+    "Return to the question's language and give your final, qualified verdict. Be specific — vague conclusions lose marks.",
+    "No new evidence here. New perspective only. Make your final sentence land."
+  ]
+};
+
+const WRITE_TIPS_IB = {
+  'Context': [
+    "Look at the command term before you write — it tells you what kind of argument to frame. Evaluate, examine, and discuss all ask for different things.",
+    "Name the historiographical debate your essay enters. What do historians actually argue about this topic? Starting there signals top-band thinking.",
+    "Specific details matter — named states, leaders, dates, and causes show the examiner you know the period, not just the general story."
+  ],
+  'Thesis': [
+    "Your thesis must make a judgment, not a plan. Use a degree word — primarily, largely, more than any other factor — to show where you stand.",
+    "The examiner checks whether your thesis directly answers the question. Read the question one more time before writing this sentence.",
+    "A top-band thesis acknowledges complexity: signal what you will concede before asserting your main argument. Show you see both sides."
+  ],
+  'Body ¶1': [
+    "Your topic sentence should use the question's own language. If the examiner can't see the question in your paragraph, you're probably drifting.",
+    "Name a historian and engage with their argument — even briefly. This shows historical thinking, not just historical knowledge.",
+    "After every piece of evidence, add your analysis: what does this prove? Why does it matter for your argument? Evidence alone earns nothing."
+  ],
+  'Body ¶2': [
+    "Examine a different dimension here — social, economic, or ideological — to show your argument holds across multiple areas of history.",
+    "Name a contrasting historian or school of thought. Engaging with competing interpretations is what separates good essays from great ones.",
+    "Use evaluative language: 'This interpretation is convincing because... however, it overlooks...' Show the examiner you are weighing, not just describing."
+  ],
+  'Body ¶3': [
+    "Push beyond what happened into why it mattered — for whom, to what degree, and over what timeframe. Significance earns top marks.",
+    "Engage critically with a historian: what is their argument, what evidence supports it, and where does their interpretation fall short?",
+    "Consider perspectives beyond the main narrative — different social groups, regions, or time horizons can deepen your analysis significantly."
+  ],
+  'Conclusion': [
+    "Give your final, qualified verdict using the question's language. Vague conclusions lose marks — commit to a clear judgment and defend it.",
+    "Synthesize your three arguments: show how they work together as one coherent case, not as three separate points lined up in a row.",
+    "Note where the historical debate remains open, and state clearly which interpretation you find most persuasive — and why."
+  ]
+};
+
+let coachMode = false;
+let ibMode = false;
+let lastTipSection = -1;
+
+function toggleCoach(val) {
+  coachMode = val;
+  document.getElementById('writeLayout').classList.toggle('coach', val);
+  document.getElementById('writeRight').classList.toggle('show', val);
+  if (val && eph === 'writing') updateTips(wSec(wTotSec - er));
+  localStorage.setItem('ib-coach', val ? '1' : '0');
+}
+
+function toggleIbMode(val) {
+  ibMode = val;
+  lastTipSection = -1;
+  if (coachMode && eph === 'writing') updateTips(wSec(wTotSec - er));
+  localStorage.setItem('ib-mode', val ? '1' : '0');
+}
+
+function updateTips(si) {
+  if (!coachMode || si === lastTipSection) return;
+  lastTipSection = si;
+  const secName = ESECS[si];
+  const bank = ibMode ? WRITE_TIPS_IB : WRITE_TIPS;
+  const tips = bank[secName] || [];
+  document.getElementById('tipLabel').textContent = secName;
+  document.getElementById('tipList').innerHTML = tips.map(t => `<div class="tip-item">${t}</div>`).join('');
+}
+
+// ── INIT ──────────────────────────────────────────────
+buildStyleBar();
+const _s = parseInt(localStorage.getItem('ib-skin') || '0');
+setSkin(isNaN(_s) ? 0 : Math.min(_s, SKINS.length - 1));
+const _c = localStorage.getItem('ib-coach') === '1';
+if (_c) { document.getElementById('coachToggle').checked = true; toggleCoach(true); }
+const _ib = localStorage.getItem('ib-mode') === '1';
+if (_ib) { document.getElementById('ibToggle').checked = true; toggleIbMode(true); }
+</script>
+</body>
+</html>
