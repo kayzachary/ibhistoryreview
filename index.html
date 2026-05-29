@@ -96,9 +96,11 @@ body.skin-stadium .big-time { font-size:clamp(5.5rem,22vw,17rem); letter-spacing
 body.skin-military .big-time { letter-spacing:0.14em; }
 
 .progress-row { display:flex; gap:12px; margin:20px 0 6px; flex-wrap:wrap; justify-content:center; }
-.seg { height:18px; border-radius:9px; background:var(--seg-bg); border:2px solid var(--seg-border); transition:background 0.5s,border-color 0.5s; }
-.seg.active { background:var(--timer-color); border-color:var(--timer-color); }
-.seg.done { background:var(--green); border-color:var(--green2); }
+.seg { position:relative; height:18px; border-radius:9px; background:var(--seg-bg); border:2px solid var(--seg-border); overflow:hidden; transition:border-color 0.5s; }
+.seg.active { border-color:var(--timer-color); }
+.seg.done { border-color:var(--green2); }
+.seg-fill { position:absolute; inset:0; width:0%; background:var(--timer-color); transition:width 1s linear, background 0.4s; }
+.seg-fill.done { background:var(--green2); }
 .seg-labels { display:flex; gap:12px; margin-bottom:18px; flex-wrap:wrap; justify-content:center; }
 .seg-lbl { text-align:center; font-size:clamp(0.72rem,1.4vw,1rem); color:var(--text3); line-height:1.5; }
 .seg-lbl.active { color:var(--timer-color); font-weight:700; }
@@ -127,9 +129,30 @@ body.skin-military .big-time { letter-spacing:0.14em; }
 .arc-fg.danger { stroke:#ff3a3a; }
 .arc-inner { position:absolute; top:50%;left:50%; transform:translate(-50%,-50%); text-align:center; width:100%; }
 
-/* question display */
+/* floating hint callouts — multiple boxes drift up and off-screen */
+.float-layer { position:fixed; inset:0; z-index:90; pointer-events:none; overflow:hidden; }
+.callout {
+  position:absolute; top:0;
+  width:clamp(210px,23vw,330px);
+  background:var(--card-bg);
+  border:2px solid var(--card-border);
+  border-left:5px solid var(--gold);
+  border-radius:14px;
+  padding:15px 18px;
+  box-shadow:0 10px 34px rgba(0,0,0,0.30);
+  opacity:0;
+  pointer-events:auto;
+  will-change:transform,opacity;
+}
+.callout .co-cat { font-size:0.64rem; color:var(--gold); text-transform:uppercase; letter-spacing:0.18em; font-weight:800; margin-bottom:7px; }
+.callout .co-text { font-size:clamp(0.85rem,1.2vw,1.02rem); color:var(--text); line-height:1.5; font-style:italic; }
+.callout.write { border-left-color:var(--green2); }
+.callout.write .co-cat { color:var(--green2); }
+@media(max-width:640px){ .callout { width:clamp(165px,58vw,260px); } }
+
+/* question display (legacy single box — retained for fallback, unused) */
 .q-box { background:var(--card-bg); border:2px solid var(--card-border); border-left:6px solid var(--gold); border-radius:16px; padding:clamp(28px,5vh,56px) clamp(24px,5vw,64px); width:min(92vw,1000px); text-align:center; margin:16px auto 0; min-height:clamp(160px,28vh,300px); display:flex; align-items:center; justify-content:center; transition:opacity 0.6s; box-shadow:0 4px 32px rgba(0,0,0,0.25); }
-.q-box.hidden { opacity:0; pointer-events:none; }
+.q-box.hidden { display:none; }
 .q-cat { font-size:clamp(0.75rem,1.4vw,1rem); color:var(--gold); text-transform:uppercase; letter-spacing:0.2em; font-weight:800; margin-bottom:16px; }
 .q-text { font-size:clamp(1.4rem,3.2vw,2.4rem); color:var(--text); font-style:italic; line-height:1.5; font-weight:500; }
 
@@ -164,19 +187,9 @@ input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.2); }
 input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%; background:var(--gold); border:3px solid var(--bg2); cursor:pointer; }
 .slider-wrap.hidden { display:none; }
 
-/* coach mode layout */
+/* writing layout */
 .write-layout { display:flex; flex-direction:column; align-items:center; width:100%; }
-.write-layout.coach { flex-direction:row; align-items:flex-start; gap:clamp(20px,3.5vw,48px); justify-content:center; max-width:min(96vw,1400px); flex-wrap:wrap; }
 .write-left { display:flex; flex-direction:column; align-items:center; }
-.write-right { display:none; flex-direction:column; justify-content:center; min-width:320px; flex:1; max-width:640px; }
-.write-right.show { display:flex; }
-.write-layout.coach .arc-wrap { width:clamp(220px,28vw,380px); height:clamp(220px,28vw,380px); }
-.write-layout.coach #writeTime { font-size:clamp(3rem,7.5vw,5.5rem) !important; }
-.tip-card { background:var(--card-bg); border:2px solid var(--card-border); border-left:8px solid var(--gold); border-radius:18px; padding:clamp(22px,3vw,36px) clamp(20px,3vw,32px); }
-.tip-label { font-size:clamp(1rem,1.8vw,1.5rem); color:var(--gold); text-transform:uppercase; letter-spacing:0.2em; font-weight:800; margin-bottom:18px; }
-.tip-item { font-size:clamp(1.15rem,2vw,1.65rem); color:var(--text); line-height:1.65; padding:14px 0; border-bottom:1px solid var(--card-border); }
-.tip-item:last-child { border-bottom:none; padding-bottom:0; }
-.tip-item::before { content:'→ '; color:var(--gold); font-weight:700; }
 .s-section-sep { font-size:0.72rem; color:var(--text3); text-transform:uppercase; letter-spacing:0.2em; font-weight:700; margin:18px 0 4px; }
 </style>
 </head>
@@ -186,6 +199,9 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
   <button class="back-btn" id="backBtn" onclick="goMenu()" style="visibility:hidden">← Menu</button>
   <button class="theme-toggle" id="themBtn" onclick="toggleTheme()">🌙 Dark</button>
 </div>
+
+<!-- floating hint callouts overlay -->
+<div class="float-layer" id="floatLayer"></div>
 
 <!-- MENU -->
 <div class="screen active" id="menuScreen">
@@ -206,6 +222,8 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
       <div class="mode-badge">Adjustable · Read + Write</div>
     </div>
   </div>
+  <div class="section-label">Choose a Style</div>
+  <div class="skin-grid" id="skinGrid"></div>
 </div>
 
 <!-- PAPER 3 -->
@@ -251,12 +269,6 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
   </div>
   <div id="readView" style="display:flex;flex-direction:column;align-items:center;width:100%;">
     <div class="big-time" id="readTime" style="font-size:clamp(3.5rem,10vw,8rem);margin-bottom:8px;">5:00</div>
-    <div class="q-box hidden" id="qBox">
-      <div style="width:100%">
-        <div class="q-cat" id="qCat">Causation</div>
-        <div class="q-text" id="qText">What were the short, medium, and long-term causes?</div>
-      </div>
-    </div>
   </div>
   <div id="writeView" style="display:none">
     <div class="write-layout" id="writeLayout">
@@ -272,12 +284,6 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
         </div>
         <div class="progress-row" id="eSegs"></div>
         <div class="seg-labels" id="eLbls"></div>
-      </div>
-      <div class="write-right" id="writeRight">
-        <div class="tip-card">
-          <div class="tip-label" id="tipLabel">Context</div>
-          <div id="tipList"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -298,11 +304,11 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
 <div class="s-overlay" id="sOverlay" onclick="if(event.target===this)closeS()">
   <div class="s-panel">
     <div class="s-title">Essay Settings</div>
-    <div class="s-desc">Customize writing tips and reading prompts.</div>
+    <div class="s-desc">Customize the floating hints and reading prompts.</div>
     <div class="t-row">
       <div>
-        <div class="t-name">Writing Coach</div>
-        <div class="t-sub-sm">Show section tips alongside the writing timer</div>
+        <div class="t-name">Writing Hints</div>
+        <div class="t-sub-sm">Float section-by-section writing tips up the screen while you write</div>
       </div>
       <label class="sw"><input type="checkbox" id="coachToggle" onchange="toggleCoach(this.checked)"><span class="sw-sl"></span></label>
     </div>
@@ -312,6 +318,13 @@ input[type=range]::-moz-range-thumb { width:26px; height:26px; border-radius:50%
         <div class="t-sub-sm">Swap tips for rubric-aligned IB language — AOs, command terms, Band 5 descriptors</div>
       </div>
       <label class="sw"><input type="checkbox" id="ibToggle" onchange="toggleIbMode(this.checked)"><span class="sw-sl"></span></label>
+    </div>
+    <div class="t-row">
+      <div>
+        <div class="t-name">Hint Pace</div>
+        <div class="t-sub-sm">How often a new floating callout appears</div>
+      </div>
+      <label class="sw"><input type="checkbox" id="paceToggle" onchange="togglePace(this.checked)"><span class="sw-sl"></span></label>
     </div>
     <div class="s-section-sep">Reading Prompts</div>
     <div id="toggleList"></div>
@@ -444,6 +457,102 @@ function buildStyleBar() {
   });
 }
 
+// ── FLOATING CALLOUTS ──────────────────────────────────
+// A steady feed of hint cards that rise up the side gutters and fade out,
+// so a fresh prompt is always arriving instead of one box sitting for 18s.
+const Floats = {
+  layer:null, timer:null, supply:null, every:6500, lane:0, paused:false,
+  init(){ this.layer = document.getElementById('floatLayer'); },
+  start(supply, every){
+    this.clear();
+    this.supply = supply; this.every = every; this.paused = false;
+    this.spawn();                                   // one immediately, no wait
+    this.timer = setInterval(() => this.spawn(), every);
+  },
+  stop(){ clearInterval(this.timer); this.timer = null; },   // stop spawning; let live cards finish
+  clear(){
+    this.stop(); this.supply = null; this.paused = false;
+    if(this.layer) this.layer.innerHTML = '';
+  },
+  pauseAll(){
+    clearInterval(this.timer); this.timer = null; this.paused = true;
+    if(this.layer) [...this.layer.children].forEach(c => c.__anim && c.__anim.pause());
+  },
+  resume(){
+    if(!this.paused) return;
+    this.paused = false;
+    if(this.layer) [...this.layer.children].forEach(c => c.__anim && c.__anim.play());
+    if(this.supply) this.timer = setInterval(() => this.spawn(), this.every);
+  },
+  spawn(){
+    if(!this.supply || this.paused || !this.layer) return;
+    const item = this.supply();
+    if(item) this.render(item);
+  },
+  render(item){
+    const el = document.createElement('div');
+    el.className = 'callout ' + (item.tone || 'read');
+    el.innerHTML = '<div class="co-cat"></div><div class="co-text"></div>';
+    el.querySelector('.co-cat').textContent = item.cat;
+    el.querySelector('.co-text').textContent = item.text;
+    this.layer.appendChild(el);
+
+    const h = el.offsetHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const onLeft = (this.lane++ % 2 === 0);
+    const margin = Math.max(12, vw * 0.02);
+    if(onLeft) el.style.left = margin + 'px'; else el.style.right = margin + 'px';
+    el.style.top = vh + 'px';
+
+    const dur = 24000 + Math.random() * 9000;
+    const drift = Math.random() * 30 - 15;
+    const rot = Math.random() * 4 - 2;
+    const total = vh + h + 80;
+    const anim = el.animate([
+      { transform:'translate(0px,0px) rotate(0deg)', opacity:0 },
+      { transform:`translate(${drift*0.3}px,${-vh*0.12}px) rotate(${rot*0.3}deg)`, opacity:1, offset:0.10 },
+      { transform:`translate(${drift*0.75}px,${-vh*0.72}px) rotate(${rot*0.75}deg)`, opacity:1, offset:0.82 },
+      { transform:`translate(${drift}px,${-total}px) rotate(${rot}deg)`, opacity:0 }
+    ], { duration:dur, easing:'linear' });
+    el.__anim = anim;
+    anim.onfinish = () => el.remove();
+    el.addEventListener('mouseenter', () => { if(!this.paused) anim.pause(); });
+    el.addEventListener('mouseleave', () => { if(!this.paused) anim.play(); });
+  }
+};
+
+// Hint pace: false = relaxed, true = brisk
+let briskPace = false;
+function readEvery(){ return briskPace ? 4500 : 7000; }
+function writeEvery(){ return briskPace ? 6000 : 9000; }
+function togglePace(val){
+  briskPace = val;
+  localStorage.setItem('ib-pace', val ? '1' : '0');
+  // re-pace a live feed without losing current cards
+  if(eph === 'reading' && erun) Floats.start(readingSupply, readEvery());
+  else if(eph === 'writing' && erun) Floats.start(writingSupply, writeEvery());
+}
+
+function readingSupply(){
+  if(!qEnabled()) return null;
+  if(!qPool.length) buildPool();
+  if(!qPool.length) return null;
+  const item = qPool[qIdx % qPool.length]; qIdx++;
+  return { cat:item.cat, text:item.q, tone:'read' };
+}
+
+let writeTipIdx = 0;
+function writingSupply(){
+  if(!coachMode) return null;
+  const si = wSec(wTotSec - er);
+  const secName = ESECS[si] || 'Context';
+  const bank = ibMode ? WRITE_TIPS_IB : WRITE_TIPS;
+  const tips = bank[secName] || [];
+  if(!tips.length) return null;
+  const t = tips[writeTipIdx % tips.length]; writeTipIdx++;
+  return { cat: secName + (ibMode ? ' · IB' : ''), text:t, tone:'write' };
+}
+
 // ── NAV ────────────────────────────────────────────────
 function launchP3() {
   p3NumEssays = 3;
@@ -504,7 +613,8 @@ function p3RebuildSegs(n){
   sr.innerHTML=''; lb.innerHTML='';
   const w=n===2?'clamp(110px,19vw,280px)':'clamp(90px,14vw,220px)';
   for(let i=1;i<=n;i++){
-    const s=document.createElement('div'); s.className='seg'; s.style.width=w; s.id='p3s'+i; sr.appendChild(s);
+    const s=document.createElement('div'); s.className='seg'; s.style.width=w; s.id='p3s'+i;
+    const f=document.createElement('div'); f.className='seg-fill'; f.id='p3fill'+i; s.appendChild(f); sr.appendChild(s);
     const l=document.createElement('div'); l.className='seg-lbl'; l.style.width=w; l.id='p3l'+i; lb.appendChild(l);
   }
 }
@@ -533,9 +643,14 @@ function p3ui(){
   document.getElementById('p3Time').textContent=hms(p3r);
   document.getElementById('p3Time').className='big-time'+(p3r<=300?' danger':p3r<=600?' warn':'');
   if(p3run||p3r<p3TotSec) document.getElementById('p3Phase').textContent=`Essay ${p} of ${p3NumEssays}`;
+  const perSec=p3TotSec/p3NumEssays, elapsed=p3TotSec-p3r;
   for(let i=1;i<=p3NumEssays;i++){
-    document.getElementById('p3s'+i).className='seg'+(i<p?' done':i===p?' active':'');
-    document.getElementById('p3l'+i).className='seg-lbl'+(i<p?' done':i===p?' active':'');
+    let frac=(elapsed-(i-1)*perSec)/perSec; frac=Math.max(0,Math.min(1,frac));
+    const fill=document.getElementById('p3fill'+i);
+    fill.style.width=(frac*100)+'%';
+    fill.className='seg-fill'+(frac>=1?' done':'');
+    document.getElementById('p3s'+i).className='seg'+(frac>=1?' done':frac>0?' active':'');
+    document.getElementById('p3l'+i).className='seg-lbl'+(frac>=1?' done':frac>0?' active':'');
   }
   const marks=p3Marks(p3TotSec,p3NumEssays);
   if(marks[p3r]!==undefined&&!p3f.has(p3r)){ p3f.add(p3r); flash('p3Cp',marks[p3r]); }
@@ -624,7 +739,7 @@ function jumpToSection(i) {
   const newElapsed = Math.round(wTotSec * ESEC_FRACS[i]);
   er = wTotSec - newElapsed;
   buildWCP(wTotSec).forEach(([at]) => { if (at >= newElapsed) ef.delete(at); });
-  lastTipSection = -1;
+  lastTipSection = -1; writeTipIdx = 0;
   eui();
 }
 
@@ -632,11 +747,19 @@ function jumpToSection(i) {
   const sr=document.getElementById('eSegs'),lb=document.getElementById('eLbls');
   ESECS.forEach((n,i)=>{
     const s=document.createElement('div'); s.className='seg'; s.style.width='clamp(50px,9vw,110px)'; s.style.cursor='pointer'; s.id='es'+i;
+    const f=document.createElement('div'); f.className='seg-fill'; f.id='efill'+i; s.appendChild(f);
     s.onclick=()=>jumpToSection(i); sr.appendChild(s);
     const l=document.createElement('div'); l.className='seg-lbl'; l.style.width='clamp(50px,9vw,110px)'; l.style.cursor='pointer'; l.id='el'+i; l.textContent=n;
     l.onclick=()=>jumpToSection(i); lb.appendChild(l);
   });
 })();
+
+// When the writing section changes, restart its tip cycle and pop one out right away.
+function onSectionChange(si){
+  if(si===lastTipSection) return;
+  lastTipSection = si; writeTipIdx = 0;
+  if(coachMode && eph==='writing') Floats.spawn();
+}
 
 function eui(){
   if(eph==='reading'){
@@ -650,10 +773,16 @@ function eui(){
     document.getElementById('arcFg').style.strokeDashoffset=CIRC*pct;
     document.getElementById('arcFg').className='arc-fg'+(er<=180?' danger':er<=300?' warn':'');
     const si=wSec(el);
-    updateTips(si);
+    onSectionChange(si);
+    const elapsedFrac=el/wTotSec;
     for(let i=0;i<6;i++){
-      document.getElementById('es'+i).className='seg'+(i<si?' done':i===si?' active':'');
-      document.getElementById('el'+i).className='seg-lbl'+(i<si?' done':i===si?' active':'');
+      const start=ESEC_FRACS[i], end=(i<5)?ESEC_FRACS[i+1]:1;
+      let frac=(elapsedFrac-start)/(end-start); frac=Math.max(0,Math.min(1,frac));
+      const fill=document.getElementById('efill'+i);
+      fill.style.width=(frac*100)+'%';
+      fill.className='seg-fill'+(frac>=1?' done':'');
+      document.getElementById('es'+i).className='seg'+(frac>=1?' done':frac>0?' active':'');
+      document.getElementById('el'+i).className='seg-lbl'+(frac>=1?' done':frac>0?' active':'');
     }
     buildWCP(wTotSec).forEach(([at,msg])=>{ if(el>=at&&!ef.has(at)){ ef.add(at); if(msg)flash('eCp',msg); } });
   }
@@ -666,36 +795,43 @@ function essayGo(){
   if(eph==='idle'){
     document.getElementById('eSliderWrap').classList.add('hidden');
     if(rTotSec===0){
-      eph='writing'; er=wTotSec;
+      eph='writing'; er=wTotSec; lastTipSection=-1; writeTipIdx=0;
       document.getElementById('ePhase').textContent='';
       document.getElementById('eSub').textContent=`Writing Phase · ${wTotSec/60} Minutes`;
       document.getElementById('readView').style.display='none';
       document.getElementById('writeView').style.display='block';
       flash('eCp','✍️ Begin writing — no reading phase.');
+      Floats.start(writingSupply, writeEvery());
       eiv=setInterval(()=>{ er--; eui(); if(er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
       return;
     }
     eph='reading'; er=rTotSec;
     document.getElementById('ePhase').textContent='Reading & Planning';
     document.getElementById('eSub').textContent=`Reading & Planning · ${rTotSec/60} Minutes`;
-    if(qEnabled()) { document.getElementById('qBox').classList.remove('hidden'); startQ(); }
+    qIdx=0; buildPool();
+    Floats.start(readingSupply, readEvery());
+    eiv=setInterval(()=>{ er--; eui(); if(eph==='reading'&&er<=0)toWrite(); else if(eph==='writing'&&er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
+    return;
   }
+  // resume from pause
+  Floats.resume();
   eiv=setInterval(()=>{ er--; eui(); if(eph==='reading'&&er<=0)toWrite(); else if(eph==='writing'&&er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
 }
 
 function toWrite(){
-  clearInterval(eiv); stopQ();
-  eph='writing'; er=wTotSec;
+  clearInterval(eiv);
+  eph='writing'; er=wTotSec; lastTipSection=-1; writeTipIdx=0;
   document.getElementById('ePhase').textContent='';
   document.getElementById('eSub').textContent=`Writing Phase · ${wTotSec/60} Minutes`;
   document.getElementById('readView').style.display='none';
   document.getElementById('writeView').style.display='block';
   flash('eCp','✍️ Reading time complete — begin writing your context.');
+  Floats.start(writingSupply, writeEvery());
   eiv=setInterval(()=>{ er--; eui(); if(er<=0){clearInterval(eiv);erun=false;eDone();} },1000);
 }
 
 function essayStop(){
-  clearInterval(eiv);erun=false;stopQ();
+  clearInterval(eiv);erun=false;Floats.pauseAll();
   document.getElementById('ePause').style.display='none';
   document.getElementById('eStart').style.display='inline-block';
   document.getElementById('eStart').textContent='Resume';
@@ -703,6 +839,7 @@ function essayStop(){
 }
 
 function eDone(){
+  Floats.stop();
   document.getElementById('ePhase').textContent="Time's Up";
   document.getElementById('ePause').style.display='none';
   document.getElementById('eStart').style.display='inline-block';
@@ -710,7 +847,7 @@ function eDone(){
 }
 
 function essayReset(){
-  clearInterval(eiv);stopQ();erun=false;eph='idle';er=rTotSec;ef.clear();lastTipSection=-1;
+  clearInterval(eiv);Floats.clear();erun=false;eph='idle';er=rTotSec;ef.clear();lastTipSection=-1;writeTipIdx=0;
   document.getElementById('eStart').style.display='inline-block';
   document.getElementById('eStart').textContent='Start';
   document.getElementById('ePause').style.display='none';
@@ -722,7 +859,6 @@ function essayReset(){
   document.getElementById('writeTime').textContent=ms(wTotSec);
   document.getElementById('writeTime').className='big-time';
   document.getElementById('eCp').classList.remove('show');
-  document.getElementById('qBox').classList.add('hidden');
   document.getElementById('arcFg').style.strokeDashoffset=0;
   document.getElementById('arcFg').className='arc-fg';
   document.getElementById('readView').style.display= rTotSec>0 ? 'flex' : 'none';
@@ -731,10 +867,11 @@ function essayReset(){
   for(let i=0;i<6;i++){
     document.getElementById('es'+i).className='seg';
     document.getElementById('el'+i).className='seg-lbl';
+    const f=document.getElementById('efill'+i); if(f){ f.style.width='0%'; f.className='seg-fill'; }
   }
 }
 
-// ── QUESTION ROTATION ─────────────────────────────────
+// ── QUESTION BANK (reading-phase prompts) ─────────────
 const QB={
   'Causation':[
     'What were the short, medium, and long-term causes of this event?',
@@ -774,7 +911,7 @@ const QB={
 };
 
 let qCats={}; Object.keys(QB).forEach(k=>qCats[k]=true);
-let qPool=[],qIdx=0,qIv=null;
+let qPool=[],qIdx=0;
 
 function qEnabled(){ return Object.values(qCats).some(v=>v); }
 function buildPool(){
@@ -783,15 +920,6 @@ function buildPool(){
   for(let i=qPool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [qPool[i],qPool[j]]=[qPool[j],qPool[i]]; }
   qIdx=0;
 }
-function showQ(){
-  if(!qPool.length)return;
-  const item=qPool[qIdx%qPool.length]; qIdx++;
-  const box=document.getElementById('qBox');
-  box.style.opacity='0';
-  setTimeout(()=>{ document.getElementById('qCat').textContent=item.cat; document.getElementById('qText').textContent=item.q; box.style.opacity='1'; },420);
-}
-function startQ(){ if(!qEnabled())return; buildPool(); showQ(); qIv=setInterval(showQ,18000); }
-function stopQ(){ clearInterval(qIv); qIv=null; }
 
 (function(){
   const list=document.getElementById('toggleList');
@@ -804,7 +932,7 @@ function stopQ(){ clearInterval(qIv); qIv=null; }
 
 function toggleCat(cat,val){
   qCats[cat]=val;
-  if(eph==='reading'&&erun){ buildPool(); showQ(); if(!qEnabled())document.getElementById('qBox').classList.add('hidden'); else document.getElementById('qBox').classList.remove('hidden'); }
+  if(eph==='reading'&&erun){ qIdx=0; buildPool(); }   // refresh the live feed's pool
 }
 function quickWrite() {
   document.getElementById('eReadSlider').value = 0;
@@ -816,7 +944,7 @@ function quickWrite() {
 function openS(){ document.getElementById('sOverlay').classList.add('open'); }
 function closeS(){ document.getElementById('sOverlay').classList.remove('open'); }
 
-// ── WRITING COACH ─────────────────────────────────────
+// ── WRITING TIPS (writing-phase callouts) ─────────────
 const WRITE_TIPS = {
   'Context': [
     "Set the scene in 3–5 sentences — name the era, key actors, and the forces already in motion. Context is the frame, not the painting.",
@@ -883,43 +1011,39 @@ const WRITE_TIPS_IB = {
   ]
 };
 
-let coachMode = false;
+let coachMode = true;
 let ibMode = false;
 let lastTipSection = -1;
 
 function toggleCoach(val) {
   coachMode = val;
-  document.getElementById('writeLayout').classList.toggle('coach', val);
-  document.getElementById('writeRight').classList.toggle('show', val);
-  if (val && eph === 'writing') updateTips(wSec(wTotSec - er));
   localStorage.setItem('ib-coach', val ? '1' : '0');
+  if (val && eph === 'writing') { lastTipSection = -1; writeTipIdx = 0; Floats.spawn(); }
 }
 
 function toggleIbMode(val) {
   ibMode = val;
-  lastTipSection = -1;
-  if (coachMode && eph === 'writing') updateTips(wSec(wTotSec - er));
   localStorage.setItem('ib-mode', val ? '1' : '0');
-}
-
-function updateTips(si) {
-  if (!coachMode || si === lastTipSection) return;
-  lastTipSection = si;
-  const secName = ESECS[si];
-  const bank = ibMode ? WRITE_TIPS_IB : WRITE_TIPS;
-  const tips = bank[secName] || [];
-  document.getElementById('tipLabel').textContent = secName;
-  document.getElementById('tipList').innerHTML = tips.map(t => `<div class="tip-item">${t}</div>`).join('');
+  if (coachMode && eph === 'writing') { writeTipIdx = 0; Floats.spawn(); }
 }
 
 // ── INIT ──────────────────────────────────────────────
+Floats.init();
+buildSkinGrid();
 buildStyleBar();
 const _s = parseInt(localStorage.getItem('ib-skin') || '0');
 setSkin(isNaN(_s) ? 0 : Math.min(_s, SKINS.length - 1));
-const _c = localStorage.getItem('ib-coach') === '1';
-if (_c) { document.getElementById('coachToggle').checked = true; toggleCoach(true); }
+
+briskPace = localStorage.getItem('ib-pace') === '1';
+document.getElementById('paceToggle').checked = briskPace;
+
+const _c = localStorage.getItem('ib-coach');
+coachMode = (_c !== '0');                              // floating writing hints on by default
+document.getElementById('coachToggle').checked = coachMode;
+
 const _ib = localStorage.getItem('ib-mode') === '1';
-if (_ib) { document.getElementById('ibToggle').checked = true; toggleIbMode(true); }
+ibMode = _ib;
+document.getElementById('ibToggle').checked = _ib;
 </script>
 </body>
 </html>
